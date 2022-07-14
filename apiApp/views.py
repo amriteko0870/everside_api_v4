@@ -1162,8 +1162,6 @@ def providersData(request,format=None):
             if '' not in client:
                 providers = providers.filter(CLIENT_NAME__in = client)
             
-            
-
             providers = providers.exclude(PROVIDER_NAME__in = ['nan']).annotate(provider_name = F('PROVIDER_NAME'))\
                                             .values('provider_name')\
                                             .annotate(
@@ -1245,7 +1243,16 @@ def clinicData(request,format=None):
                                             default=0,
                                             output_field=IntegerField()
                                             )),
-                                        average_nps=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                        nps=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                        average_nps = Case(
+                                                    When(
+                                                        nps__lt = 0,
+                                                        then = 0    
+                                                        ),
+                                                        default=F('nps'),
+                                                        output_field=FloatField()
+                                                        ),
+                                                        
                                         city = F('CLINIC_CITY'),
                                         state = F('CLINIC_STATE'),
                                         address = Concat('CLINIC_CITY', V(', '), 'CLINIC_STATE'),
@@ -1648,13 +1655,17 @@ def totalCommentsDownload(request,format=None):
                                                             timestamp = F('SURVEY_MONTH'), 
                                                             time = F('TIMESTAMP'),
                                                             clinic = F('NPSCLINIC'),
+                                                            client = F('CLIENT_NAME'),
+                                                            topic = F('TOPIC'),
                                                             question_type = V('REASONNPSSCORE', output_field=CharField())
                                                             
                                                 )
             all_comments = all_comments.exclude(review = '  ')
             all_comments = sorted(all_comments, key=itemgetter('time'),reverse=True)
             all_comments_df = pd.DataFrame(list(all_comments))
-            all_comments_df = all_comments_df[['timestamp','review','clinic','label']]
+            all_comments_df = all_comments_df[['timestamp','review','topic','client','clinic','label']]
+            all_comments_df.rename(columns={'review':'comments'}, inplace=True)
+            all_comments_df.columns = all_comments_df.columns.str.upper()
             username = (request.GET.get('username'))
             a = 'uploads/engagement_download_files/'+username+'_all_comments.csv'
             all_comments_df.to_csv(a,index=False)
@@ -1703,6 +1714,8 @@ def alertCommentsDownload(request,format=None):
                                                             label = F('sentiment_label'),
                                                             timestamp = F('SURVEY_MONTH'), 
                                                             clinic = F('NPSCLINIC'),
+                                                            client = F('CLIENT_NAME'),
+                                                            topic = F('TOPIC'),
                                                             time = F('TIMESTAMP'),
                                                             question_type = V('REASONNPSSCORE', output_field=CharField())
 
@@ -1710,7 +1723,9 @@ def alertCommentsDownload(request,format=None):
             alert_comments = alert_comments.exclude(review = '  ')
             alert_comments= sorted(alert_comments ,key=itemgetter('time'),reverse=True) 
             alert_comments_df = pd.DataFrame(list(alert_comments))
-            alert_comments_df = alert_comments_df[['timestamp','review','clinic','label']]
+            alert_comments_df = alert_comments_df[['timestamp','review','topic','client','clinic','label']]
+            alert_comments_df.rename(columns={'review':'comments'}, inplace=True)
+            alert_comments_df.columns = alert_comments_df.columns.str.upper()
             username = (request.GET.get('username'))
             a = 'uploads/engagement_download_files/'+username+'_alert_comments.csv'
             alert_comments_df.to_csv(a,index=False)
@@ -1749,7 +1764,7 @@ def logout(request):
 
 
 
-
+#-------------------------- Admin rights -------------------------------------------------
 @api_view(['POST','GET'])
 def userList(request):
     try:

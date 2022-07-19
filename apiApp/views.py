@@ -9,6 +9,7 @@ import datetime
 import re
 from operator import itemgetter 
 import os
+import random
 #-------------------------Django Modules---------------------------------------------
 from django.http import Http404, HttpResponse, JsonResponse,FileResponse
 from django.shortcuts import render
@@ -111,9 +112,7 @@ def filterClient(request,format=None):
             region = request.GET.get('region')
             clinic = request.GET.get('clinic')
             region = re.split(r"-|,", region)
-            clinic = re.split(r"-|,", clinic)
-            print('clinic :',clinic)
-            print('region :',region)       
+            clinic = re.split(r"-|,", clinic)     
             check_token = user_data.objects.get(USERNAME = (request.data)['username'])
             if(check_token.TOKEN != (request.headers)['Authorization']):
                 return Response({'Message':'FALSE'})
@@ -137,7 +136,7 @@ def filterClient(request,format=None):
         return Response({'Message':'FALSE'})    
 
 
-#-------------------- for Login -----------------------------------------------------
+#-------------------- Login and Logout -----------------------------------------------------
 @api_view(['POST'])
 def userLogin(request,format=None):
     try:
@@ -161,7 +160,52 @@ def userLogin(request,format=None):
         return Response({'Message':'FALSE'})
 
            
-            
+
+
+@api_view(['GET'])
+def logout(request):
+    username = (request.GET.get('username'))
+    try:
+        a = 'uploads/engagement_download_files/'+username+'_alert_comments.csv'
+        os.remove(a)
+    except:
+        pass
+    try:
+        a = 'uploads/engagement_download_files/'+username+'_all_comments.csv'
+        os.remove(a)
+    except:
+        pass
+    try:
+        a = 'uploads/engagement_download_files/'+username+'_average_table.csv'
+        os.remove(a)
+    except:
+        pass
+    try:
+        a = 'uploads/engagement_download_files/'+username+'_provider_data.csv'
+        os.remove(a)
+    except:
+        pass
+    try:
+        a = 'uploads/engagement_download_files/'+username+'health_center_data.csv'
+        os.remove(a)
+    except:
+        pass
+    try:
+        a = 'uploads/engagement_download_files/'+username+'client_data.csv'
+        os.remove(a)
+    except:
+        pass
+    try:
+        f_obj = engagement_file_data.objects.filter(USERNAME = username).values()
+        f_name = (f_obj[0])['FILE_NAME'][:-4]
+        a = 'uploads/engagement_download_files/'+f_name+'_'+username+'.csv'
+        os.remove(a)
+    except:
+        pass
+
+    return Response({'Message':'TRUE'})
+
+
 #---------------------For Dashboards--------------------------------------------------
 @api_view(['POST'])
 def netPromoterScore(request,format=None):
@@ -358,8 +402,7 @@ def netSentimentScore(request,format=None):
                     "extreme":extreme,
                     "total_extreme":len(extreme_count),
                     "neutral":neutral,
-                    "total_neutral": len(neutral_count),
-                    
+                    "total_neutral": len(neutral_count), 
                 }
                 
             nss_pie = [{
@@ -975,6 +1018,73 @@ def nssOverTime(request,format=None):
     except:
         return Response({'Message':'FALSE'})
     
+
+@api_view(['POST'])
+def npsAverageGraph(request,format=None):
+    try:
+        if request.method == 'POST':     
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            region = (request.GET.get('region'))
+            clinic = (request.GET.get('clinic'))
+            client = (request.GET.get('client')).split(',')
+            region = re.split(r"-|,", region)
+            clinic = re.split(r"-|,", clinic)
+            client = ''.split(',')
+
+            try:
+                check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+                if(check_token.TOKEN != (request.headers)['Authorization']):
+                    return Response({'Message':'FALSE'})    
+            except:
+                return Response({'Message':'FALSE'})  
+            start_date = str(start_month)+'-'+str(start_year)
+            startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+            if int(end_month)<12:
+                end_date = str(int(end_month)+1)+'-'+str(end_year)
+            else:
+                end_date = str('1-')+str(int(end_year)+1)
+            endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub
+            nps = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate).values()
+            
+            state = region
+            if '' not in region:
+                nps = nps.filter(REGION__in = state)
+                
+            if '' not in clinic:
+                nps = nps.filter(NPSCLINIC__in = clinic)
+            
+            if '' not in client:
+                nps = nps.filter(CLIENT_NAME__in = client)
+        
+            nps = nps.values('SURVEY_MONTH' ).annotate(
+                                                    month = Substr(F('SURVEY_MONTH'),1,3),\
+                                                    year = Cast(F('SURVEY_YEAR'),IntegerField()),
+                                                    nps_abs = twoDecimal(Avg('NPS')),
+                                                    NPS = Case(
+                                                            When(
+                                                                nps_abs__lt = 0,
+                                                                then = 0    
+                                                                ),
+                                                                default=F('nps_abs'),
+                                                                output_field=FloatField()
+                                                              )
+                                                )\
+                                            .order_by('SURVEY_MONTH')
+            
+            nps = list(nps)
+            nps.sort(key = lambda x: dt.strptime(x['SURVEY_MONTH'], '%b-%y')) 
+            min_nps = min(list(pd.DataFrame(nps)['NPS']))
+            max_nps = max(list(pd.DataFrame(nps)['NPS']))
+
+
+        return Response({'Message':'True','nps_avg':nps,'min_nps':min_nps,'max_nps':max_nps})
+    except:
+        return Response({'Message':'FALSE'})
+
+
 @api_view(['POST'])
 def npsVsSentiments(request,format=None):
     try:
@@ -1176,19 +1286,24 @@ def providersData(request,format=None):
                                                         default=0,
                                                         output_field=IntegerField()
                                                         )),
-                                                    average_nps=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
                                                     provider_type = F('PROVIDERTYPE'),
                                                     provider_category = F('PROVIDER_CATEGORY'),
-                                                    ).order_by('provider_name')
-
-            
+                                                    nps_abs=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                                    average_nps = Case(
+                                                            When(
+                                                                nps_abs__lt = 0,
+                                                                then = 0    
+                                                                ),
+                                                                default=F('nps_abs'),
+                                                                output_field=FloatField()
+                                                              )
+                                                ).order_by('provider_name')
 
             providers_list = providers.values_list('PROVIDER_NAME',flat=True).distinct()
             providers_list = list(providers_list)
             provider_topics = providerTopic.objects.exclude(PROVIDER_NAME__in = ['nan']).filter(PROVIDER_NAME__in = providers_list).values()
             providers = sorted(list(providers), key=itemgetter('provider_name'))
             provider_topics = sorted(list(provider_topics), key=itemgetter('PROVIDER_NAME'))
-
 
         return Response({'Message':'True','data':providers,'topic':provider_topics})
     except:
@@ -1320,7 +1435,15 @@ def clientData(request,format=None):
                                             default=0,
                                             output_field=IntegerField()
                                             )),
-                                        average_nps=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                        nps_abs=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                        average_nps = Case(
+                                                            When(
+                                                                nps_abs__lt = 0,
+                                                                then = 0    
+                                                                ),
+                                                                default=F('nps_abs'),
+                                                                output_field=FloatField()
+                                                              )
                                           )\
                                  .order_by('client_name')
             
@@ -1626,7 +1749,7 @@ def totalCommentsDownload(request,format=None):
             clinic = (request.GET.get('clinic'))
             region = re.split(r"-|,", region)
             clinic = re.split(r"-|,", clinic)
-
+            client = (request.GET.get('client')).split(',')
             start_date = str(start_month)+'-'+str(start_year)
             startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
             if int(end_month)<12:
@@ -1644,6 +1767,9 @@ def totalCommentsDownload(request,format=None):
 
             if '' not in clinic:
                 all_comments = all_comments.filter(NPSCLINIC__in = clinic)
+            
+            if '' not in client:
+                alert_comments = alert_comments.filter(CLIENT_NAME__in = client)
     
             all_comments = all_comments.values('id')\
             .annotate(
@@ -1687,6 +1813,8 @@ def alertCommentsDownload(request,format=None):
             clinic = (request.GET.get('clinic'))
             region = re.split(r"-|,", region)
             clinic = re.split(r"-|,", clinic)
+            client = (request.GET.get('client')).split(',')
+            username = (request.GET.get('username'))
             start_date = str(start_month)+'-'+str(start_year)
             startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
             if int(end_month)<12:
@@ -1704,6 +1832,9 @@ def alertCommentsDownload(request,format=None):
             if '' not in clinic:
                 alert_comments = alert_comments.filter(NPSCLINIC__in = clinic)
                 
+            if '' not in client:
+                alert_comments = alert_comments.filter(CLIENT_NAME__in = client)
+
 
             alert_comments = alert_comments.filter(sentiment_label = 'Extreme').values('id')\
                                                 .annotate(
@@ -1726,7 +1857,6 @@ def alertCommentsDownload(request,format=None):
             alert_comments_df = alert_comments_df[['timestamp','review','topic','client','clinic','label']]
             alert_comments_df.rename(columns={'review':'comments'}, inplace=True)
             alert_comments_df.columns = alert_comments_df.columns.str.upper()
-            username = (request.GET.get('username'))
             a = 'uploads/engagement_download_files/'+username+'_alert_comments.csv'
             alert_comments_df.to_csv(a,index=False)
             response = FileResponse(open(a, 'rb'))
@@ -1734,35 +1864,243 @@ def alertCommentsDownload(request,format=None):
     except:
         return Response({'Message':'FALSE'}) 
 
+
 @api_view(['GET'])
-def logout(request):
-    username = (request.GET.get('username'))
+def providerDataDownload(request,format=None):
     try:
-        a = 'uploads/engagement_download_files/'+username+'_alert_comments.csv'
-        os.remove(a)
-    except:
-        pass
-    try:
-        a = 'uploads/engagement_download_files/'+username+'_all_comments.csv'
-        os.remove(a)
-    except:
-        pass
-    try:
-        a = 'uploads/engagement_download_files/'+username+'_average_table.csv'
-        os.remove(a)
-    except:
-        pass
-    try:
-        f_obj = engagement_file_data.objects.filter(USERNAME = username).values()
-        f_name = (f_obj[0])['FILE_NAME'][:-4]
-        a = 'uploads/engagement_download_files/'+f_name+'_'+username+'.csv'
-        os.remove(a)
-    except:
-        pass
+        if request.method == 'GET':
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            region = (request.GET.get('region'))
+            clinic = (request.GET.get('clinic'))
+            region = re.split(r"-|,", region)
+            clinic = re.split(r"-|,", clinic)
+            client = (request.GET.get('client')).split(',')
+            username = (request.GET.get('username')) 
+            start_date = str(start_month)+'-'+str(start_year)
+            startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+            if int(end_month)<12:
+                end_date = str(int(end_month)+1)+'-'+str(end_year)
+            else:
+                end_date = str('1-')+str(int(end_year)+1)
+            endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub 
+        
+            providers = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate).values()
+            
+            state = region
+            if '' not in region:
+                providers = providers.filter(REGION__in = state)
+                
 
-    return Response({'Message':'TRUE'})
+            if '' not in clinic:
+                providers = providers.filter(NPSCLINIC__in = clinic)
+            
+            if '' not in client:
+                providers = providers.filter(CLIENT_NAME__in = client)
+            
+            providers = providers.exclude(PROVIDER_NAME__in = ['nan']).annotate(provider_name = F('PROVIDER_NAME'))\
+                                            .values('provider_name')\
+                                            .annotate(
+                                                    count = Count(F('REVIEW_ID')),
+                                                    promoter = Sum(Case(
+                                                        When(nps_label='Promoter',then=1),
+                                                        default=0,
+                                                        output_field=IntegerField()
+                                                        )),
+                                                    detractor = Sum(Case(
+                                                        When(nps_label='Detractor',then=1),
+                                                        default=0,
+                                                        output_field=IntegerField()
+                                                        )),
+                                                    average_nps=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                                    provider_type = F('PROVIDERTYPE'),
+                                                    provider_category = F('PROVIDER_CATEGORY'),
+                                                    ).order_by('provider_name')
+
+            providers_list = providers.values_list('PROVIDER_NAME',flat=True).distinct()
+            providers_list = list(providers_list)
+            provider_topics = providerTopic.objects.exclude(PROVIDER_NAME__in = ['nan']).filter(PROVIDER_NAME__in = providers_list).values()
+            providers = sorted(list(providers), key=itemgetter('provider_name'))
+            provider_topics = sorted(list(provider_topics), key=itemgetter('PROVIDER_NAME'))
+            providers_df = pd.concat([pd.DataFrame(providers),pd.DataFrame(provider_topics)[['POSITIVE_TOPIC','NEGATIVE_TOPIC']]],axis=1)
+            providers_df = providers_df[['provider_type','provider_name','provider_category','POSITIVE_TOPIC','NEGATIVE_TOPIC','count','average_nps']]
+            providers_df.rename(columns={'provider_type':'Type',
+                                'provider_name':'Name',
+                                    'provider_category':'Category',
+                                    'POSITIVE_TOPIC':'Top_Positive_Topic',
+                                    'NEGATIVE_TOPIC':'Top_Negative_Topic',
+                                    'count':'Survey_Count',
+                                    'average_nps':'NPS'}, inplace=True)
+            a = 'uploads/engagement_download_files/'+username+'_provider_data.csv'
+            providers_df.to_csv(a,index=False)
+            response = FileResponse(open(a, 'rb'))
+            return response
+    except:
+        return Response({'Message':'FALSE'})         
 
 
+@api_view(['GET'])
+def clinicDataDownload(request,format=None):
+    try:
+        if request.method == 'GET':
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            region = (request.GET.get('region'))
+            clinic = (request.GET.get('clinic'))
+            region = re.split(r"-|,", region)
+            clinic = re.split(r"-|,", clinic)
+            client = (request.GET.get('client')).split(',')
+            username = (request.GET.get('username')) 
+             
+            start_date = str(start_month)+'-'+str(start_year)
+            startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+            if int(end_month)<12:
+                end_date = str(int(end_month)+1)+'-'+str(end_year)
+            else:
+                end_date = str('1-')+str(int(end_year)+1)
+            endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub 
+            clinic_data = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate).values()
+            state = region
+            if '' not in region:
+                clinic_data = clinic_data.filter(REGION__in = state)
+            if '' not in clinic:
+                clinic_data = clinic_data.filter(NPSCLINIC__in = clinic)
+            if '' not in client:
+                clinic_data = clinic_data.filter(CLIENT_NAME__in = client)
+            clinic_data = clinic_data.exclude(NPSCLINIC__in = (['nan','Unknown'])).annotate(clinic=F('NPSCLINIC'))\
+                                 .values('clinic')\
+                                 .annotate(
+                                        clinic_full_name = Concat('NPSCLINIC',V(' '),'CLINIC_CITY', V(' '), 'CLINIC_STATE'),
+                                        count = Count(F('REVIEW_ID')),
+                                        promoter = Sum(Case(
+                                            When(nps_label='Promoter',then=1),
+                                            default=0,
+                                            output_field=IntegerField()
+                                            )),
+                                        detractor = Sum(Case(
+                                            When(nps_label='Detractor',then=1),
+                                            default=0,
+                                            output_field=IntegerField()
+                                            )),
+                                        nps=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                        average_nps = Case(
+                                                    When(
+                                                        nps__lt = 0,
+                                                        then = 0    
+                                                        ),
+                                                        default=F('nps'),
+                                                        output_field=FloatField()
+                                                        ),
+                                                        
+                                        city = F('CLINIC_CITY'),
+                                        state = F('CLINIC_STATE'),
+                                        address = Concat('CLINIC_CITY', V(', '), 'CLINIC_STATE'),
+                                        region = F('REGION')
+                                          )\
+                                 .order_by('clinic_full_name')
+
+            clinic_list = clinic_data.values_list('clinic_full_name',flat=True).distinct()
+            clinic_list = list(clinic_list)
+            clinic_topics = clinicTopic.objects.filter(CLINIC_FULL_NAME__in = clinic_list).values()
+            clinic_data = sorted(list(clinic_data), key=itemgetter('clinic_full_name'))
+            clinic_topics = sorted(list(clinic_topics), key=itemgetter('CLINIC_FULL_NAME'))
+            
+            clinic_df = pd.concat([pd.DataFrame(clinic_data),pd.DataFrame(clinic_topics)[['POSITIVE_TOPIC','NEGATIVE_TOPIC']]],axis=1)
+            clinic_df = clinic_df[['clinic','address','POSITIVE_TOPIC','NEGATIVE_TOPIC','count','average_nps']]
+            clinic_df.rename(columns={'clinic':'Name',
+                                    'address':'Location',
+                                    'POSITIVE_TOPIC':'Top_Positive_Topic',
+                                    'NEGATIVE_TOPIC':'Top_Negative_Topic',
+                                    'count':'Survey_Count',
+                                    'average_nps':'NPS'}, inplace=True)
+            a = 'uploads/engagement_download_files/'+username+'health_center_data.csv'
+            clinic_df.to_csv(a,index=False)
+            response = FileResponse(open(a, 'rb'))
+            return response
+    except:
+        return Response({'Message':'FALSE'})
+
+@api_view(['GET'])
+def clientDataDownload(request,format=None):
+    # try:
+        if request.method == 'GET':
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            region = (request.GET.get('region'))
+            clinic = (request.GET.get('clinic'))
+            region = re.split(r"-|,", region)
+            clinic = re.split(r"-|,", clinic)
+            client = (request.GET.get('client')).split(',')
+            username = (request.GET.get('username')) 
+            
+            start_date = str(start_month)+'-'+str(start_year)
+            startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+            if int(end_month)<12:
+                end_date = str(int(end_month)+1)+'-'+str(end_year)
+            else:
+                end_date = str('1-')+str(int(end_year)+1)
+            endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub
+            clients = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate).values()
+            state = region
+            if '' not in region:
+                clients = clients.filter(REGION__in = state)
+            if '' not in clinic:
+                clients = clients.filter(NPSCLINIC__in = clinic)
+            if '' not in client:
+                clients = clients.filter(CLIENT_NAME__in = client)
+            parent_client_names = clients.values_list('PARENT_CLIENT_NAME',flat=True).distinct()
+            parent_client_names = sorted(list(parent_client_names))
+            clients = clients.exclude(CLIENT_NAME__in = ['nan']).annotate(client_name=F('CLIENT_NAME'))\
+                                 .values('client_name')\
+                                 .annotate(
+                                        parent_client_name = F('PARENT_CLIENT_NAME'),
+                                        count = Count(F('REVIEW_ID')),
+                                        promoter = Sum(Case(
+                                            When(nps_label='Promoter',then=1),
+                                            default=0,
+                                            output_field=IntegerField()
+                                            )),
+                                        detractor = Sum(Case(
+                                            When(nps_label='Detractor',then=1),
+                                            default=0,
+                                            output_field=IntegerField()
+                                            )),
+                                        nps_abs=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                        average_nps = Case(
+                                                            When(
+                                                                nps_abs__lt = 0,
+                                                                then = 0    
+                                                                ),
+                                                                default=F('nps_abs'),
+                                                                output_field=FloatField()
+                                                              )
+                                          )\
+                                 .order_by('client_name')
+            
+            clients_list = clients.values_list('client_name',flat=True).distinct()
+            clients_list = list(clients_list)
+            clients_topics = clientTopic.objects.filter(CLIENT_NAME__in = clients_list).values()
+            clients = sorted(list(clients), key=itemgetter('client_name'))
+            clients_topics = sorted(list(clients_topics), key=itemgetter('CLIENT_NAME'))
+
+            client_df = pd.concat([pd.DataFrame(clients),pd.DataFrame(clients_topics)[['POSITIVE_TOPIC','NEGATIVE_TOPIC']]],axis=1)
+            client_df = client_df[['client_name','parent_client_name','POSITIVE_TOPIC','NEGATIVE_TOPIC','count','average_nps']]
+            client_df.rename(columns={'client_name':'Name',
+                                    'parent_client_name':'Parent_Client_Name',
+                                    'POSITIVE_TOPIC':'Top_Positive_Topic',
+                                    'NEGATIVE_TOPIC':'Top_Negative_Topic',
+                                    'count':'Survey_Count',
+                                    'average_nps':'NPS'}, inplace=True)
+            a = 'uploads/engagement_download_files/'+username+'client_data.csv'
+            client_df.to_csv(a,index=False)
+            response = FileResponse(open(a, 'rb'))
+            return response
 
 #-------------------------- Admin rights -------------------------------------------------
 @api_view(['POST','GET'])
@@ -1804,12 +2142,29 @@ def deleteUser(request):
                 except:
                     pass
                 try:
+                    a = 'uploads/engagement_download_files/'+username+'_provider_data.csv'
+                    os.remove(a)
+                except:
+                    pass
+                try:
+                    a = 'uploads/engagement_download_files/'+username+'health_center_data.csv'
+                    os.remove(a)
+                except:
+                    pass
+                try:
+                    a = 'uploads/engagement_download_files/'+username+'client_data.csv'
+                    os.remove(a)
+                except:
+                    pass
+                
+                try:
                     f_obj = engagement_file_data.objects.filter(USERNAME = username).values()
                     f_name = (f_obj[0])['FILE_NAME'][:-4]
                     a = 'uploads/engagement_download_files/'+f_name+'_'+username+'.csv'
                     os.remove(a)
                 except:
                     pass
+                
             else:
                 return Response({'Message':'FALSE'})
         return Response({'Message':'TRUE'})
@@ -1878,3 +2233,25 @@ def createUser(request):
     except:
         return Response({'Message':'FALSE'})
         
+
+
+
+# @api_view(['POST'])
+# def index(request):
+#     # try:
+#         if request.method == 'POST':
+#             name = request.GET.get('username')
+#             count = int(request.GET.get('count'))
+#             l = []
+#             for i in range(1,count+1):
+#                 idd = random.randint(10000,99999)
+#                 name = 'user-'+str(i)
+#                 user = {
+#                     'id':idd,
+#                     'name':name
+#                         }
+#                 l.append(user)
+                    
+#             return Response({'user_data':l})
+
+

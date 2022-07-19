@@ -1,7 +1,8 @@
 from unicodedata import name
-from django.urls import path,include
-from . import views
 
+from django.urls import include, path
+
+from . import views
 
 urlpatterns = [
     #-------------------Filters------------------------------------
@@ -28,6 +29,7 @@ urlpatterns = [
     path('providersData',views.providersData,name='providersData'),
     path('clinicData',views.clinicData,name='clinicData'),
     path('clientData',views.clientData,name='clientData'),
+    path('npsAverageGraph',views.npsAverageGraph,name='npsAverageGraph'),
  
     
     #------------------Engagement------------------------------
@@ -39,6 +41,10 @@ urlpatterns = [
     path('averageTableDownload',views.averageTableDownload,name='averageTableDownload'),
     path('totalCommentsDownload',views.totalCommentsDownload,name='totalCommentsDownload'),
     path('alertCommentsDownload',views.alertCommentsDownload,name='alertCommentsDownload'),
+    path('providerDataDownload',views.providerDataDownload,name='providerDataDownload'),
+    path('clinicDataDownload',views.clinicDataDownload,name='clinicDataDownload'),
+    path('clientDataDownload',views.clientDataDownload,name='clientDataDownload'),
+    
     
     #------------------ Files Delete -------------------------------------
     path('logout',views.logout,name='logout'),
@@ -58,5 +64,5 @@ urlpatterns = [
     
 
 
-    # path('',views.client_topic_insertion,name='client_topic_insertion'),   
+    # path('index',views.index,name='index'),   
 ]

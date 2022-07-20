@@ -292,7 +292,7 @@ def netPromoterScore(request,format=None):
                             "color":"#00AC69",
                         },
                         {
-                            "label":"Passives",
+                                "label":"Passives",
                             "percentage":passive,
                             "color":"#939799",
                         },

@@ -1,5 +1,6 @@
 from email.policy import default
 from genericpath import getsize
+import json
 from matplotlib.pyplot import polar
 import numpy as np
 import pandas as pd
@@ -10,6 +11,7 @@ import re
 from operator import itemgetter 
 import os
 import random
+import json
 #-------------------------Django Modules---------------------------------------------
 from django.http import Http404, HttpResponse, JsonResponse,FileResponse
 from django.shortcuts import render
@@ -1059,7 +1061,7 @@ def npsAverageGraph(request,format=None):
             if '' not in client:
                 nps = nps.filter(CLIENT_NAME__in = client)
         
-            nps = nps.values('SURVEY_MONTH' ).annotate(
+            nps_avg = nps.values('SURVEY_MONTH' ).annotate(
                                                     month = Substr(F('SURVEY_MONTH'),1,3),\
                                                     year = Cast(F('SURVEY_YEAR'),IntegerField()),
                                                     nps_abs = twoDecimal(Avg('NPS')),
@@ -1070,17 +1072,56 @@ def npsAverageGraph(request,format=None):
                                                                 ),
                                                                 default=F('nps_abs'),
                                                                 output_field=FloatField()
-                                                              )
+                                                              ),
                                                 )\
                                             .order_by('SURVEY_MONTH')
             
-            nps = list(nps)
-            nps.sort(key = lambda x: dt.strptime(x['SURVEY_MONTH'], '%b-%y')) 
-            min_nps = min(list(pd.DataFrame(nps)['NPS']))
-            max_nps = max(list(pd.DataFrame(nps)['NPS']))
+            promoter = nps.values('SURVEY_MONTH' ).filter(nps_label='Promoter')\
+                                                  .annotate(
+                                                    promoter = twoDecimal(Avg('NPS'))
+                                                    )\
+                                                  .order_by('SURVEY_MONTH')
+            
+            passive = nps.values('SURVEY_MONTH' ).filter(nps_label='Passive')\
+                                                  .annotate(passive = twoDecimal(Avg('NPS')))\
+                                                  .order_by('SURVEY_MONTH')
+            
+            detractors = nps.values('SURVEY_MONTH' ).filter(nps_label='Detractor')\
+                                                  .annotate(detractor = twoDecimal(Avg('NPS')))\
+                                                  .order_by('SURVEY_MONTH')
+            
+            
+            
+            nps_avg = list(nps_avg)
+            promoter = list(promoter)
+            passive = list(passive)
+            detractors = list(detractors)
+
+            nps_avg.sort(key = lambda x: dt.strptime(x['SURVEY_MONTH'], '%b-%y'))
+            promoter.sort(key = lambda x: dt.strptime(x['SURVEY_MONTH'], '%b-%y'))
+            passive.sort(key = lambda x: dt.strptime(x['SURVEY_MONTH'], '%b-%y'))
+            detractors.sort(key = lambda x: dt.strptime(x['SURVEY_MONTH'], '%b-%y'))
 
 
-        return Response({'Message':'True','nps_avg':nps,'min_nps':min_nps,'max_nps':max_nps})
+            df = pd.DataFrame(nps_avg)
+            try:
+                df = pd.concat([df,pd.DataFrame(promoter)[['promoter']]],axis = 1)
+            except:
+                df = df.assign(promoter=0)
+
+            try:
+                df = pd.concat([df,pd.DataFrame(passive)[['passive']]],axis = 1)
+            except:
+                df = df.assign(passive=0)
+
+            try:
+                df = pd.concat([df,pd.DataFrame(detractors)[['detractor']]],axis = 1)
+            except:
+                df = df.assign(detractor=0)
+                
+            nps = json.loads(df.to_json(orient='records'))
+            
+        return Response({'Message':'True','nps_avg':nps})
     except:
         return Response({'Message':'FALSE'})
 
@@ -1672,7 +1713,6 @@ def fileDownload(request,format=None):
         lat_long_df = pd.read_csv('zip_lat_long.csv')
         df['zip'] =  pd.to_numeric(df['zip'],errors='coerce')
         df = pd.merge(df,lat_long_df,on='zip',how='left')
-        
         out = prob_func(df)
         # a = 'uploads/engagement_download_files/'+f_name+'_'+username+'.csv'
         a = 'uploads/engagement_download_files/'+f_name+'_'+username+'.csv'

@@ -30,6 +30,16 @@ urlpatterns = [
     path('clinicData',views.clinicData,name='clinicData'),
     path('clientData',views.clientData,name='clientData'),
     path('npsAverageGraph',views.npsAverageGraph,name='npsAverageGraph'),
+
+    #-----------------------Provider Cards -------------------------------------
+    path('filterDateProvider',views.filterDateProvider,name='filterDateProvider'),
+    path('filterRegionProvider',views.filterRegionProvider,name='filterRegionProvider'),
+    path('filterClinicProvider',views.filterClinicProvider,name='filterClinicProvider'),
+    path('filterClientProvider',views.filterClientProvider,name='filterClientProvider'),
+    
+    
+    
+    
  
     
     #------------------Engagement------------------------------
@@ -64,5 +74,5 @@ urlpatterns = [
     
 
 
-    # path('index',views.index,name='index'),   
+    # path('',views.index,name='index'),   
 ]

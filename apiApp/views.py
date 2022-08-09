@@ -1,5 +1,6 @@
 from email.policy import default
 from genericpath import getsize
+from http import client
 import json
 from matplotlib.pyplot import polar
 import numpy as np
@@ -1498,7 +1499,189 @@ def clientData(request,format=None):
     except:
         return Response({'Message':'FALSE'})
 
-#------------------------------------------------------------------------------------------------------
+#--------------------------------Providers Scoring-----------------------------------------------------
+@api_view(['POST'])
+def filterDateProvider(request,format=None):
+    # try:
+        if request.method == 'POST':
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+            # if(check_token.TOKEN != (request.headers)['Authorization']):
+            #     return Response({'Message':'FALSE'})
+            start_date = str(start_month)+'-'+str(start_year)
+            startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+            if int(end_month)<12:
+                end_date = str(int(end_month)+1)+'-'+str(end_year)
+            else:
+                end_date = str('1-')+str(int(end_year)+1)
+            endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub         
+            obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
+                                      .filter(TIMESTAMP__lte=endDate)
+            region = obj.exclude(REGION__isnull=True)\
+                        .exclude(REGION__exact='nan')\
+                        .values_list('REGION',flat=True).distinct()
+
+            clinic = obj.exclude(NPSCLINIC__isnull=True)\
+                        .exclude(NPSCLINIC__exact='nan')\
+                        .values_list('NPSCLINIC',flat=True).distinct()
+
+            client = obj.exclude(CLIENT_NAME__isnull=True)\
+                        .exclude(CLIENT_NAME__exact='nan')\
+                        .values_list('CLIENT_NAME',flat=True).distinct()
+
+            provider = obj.exclude(PROVIDER_NAME__isnull=True)\
+                          .exclude(PROVIDER_NAME__exact='nan')\
+                          .values_list('PROVIDER_NAME',flat=True).distinct()
+
+            region = list(region)
+            region.sort()
+            provider = list(provider)
+            provider.sort()
+            clinic = list(clinic)
+            clinic.sort()
+            client = list(client)
+            client.sort()
+            return Response({'Message':'TRUE',
+                             'region':region,
+                             'provider':provider,
+                             'clinic':clinic,
+                             'client':client})
+    # except:
+    #     return Response({'Message':'FALSE'})
+
+@api_view(['POST'])
+def filterRegionProvider(request,format=None):
+    try:
+        if request.method == 'POST':
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            region = request.GET.get('region')
+            region = re.split(r"-|,", region)
+            # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+            # if(check_token.TOKEN != (request.headers)['Authorization']):
+            #     return Response({'Message':'FALSE'})
+            start_date = str(start_month)+'-'+str(start_year)
+            startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+            if int(end_month)<12:
+                end_date = str(int(end_month)+1)+'-'+str(end_year)
+            else:
+                end_date = str('1-')+str(int(end_year)+1)
+            endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub         
+            obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
+                                      .filter(TIMESTAMP__lte=endDate)
+
+            if '' not in region:
+                obj = obj.filter(REGION__in=region)
+
+            clinic = obj.exclude(NPSCLINIC__isnull=True)\
+                        .exclude(NPSCLINIC__exact='nan')\
+                        .values_list('NPSCLINIC',flat=True).distinct()
+            client = obj.exclude(CLIENT_NAME__isnull=True)\
+                        .exclude(CLIENT_NAME__exact='nan')\
+                        .values_list('CLIENT_NAME',flat=True).distinct()
+            provider = obj.exclude(PROVIDER_NAME__isnull=True)\
+                          .exclude(PROVIDER_NAME__exact='nan')\
+                          .values_list('PROVIDER_NAME',flat=True).distinct()
+
+            provider = list(provider)
+            provider.sort()
+            clinic = list(clinic)
+            clinic.sort()
+            client = list(client)
+            client.sort()
+            
+            return Response({'Message':'TRUE',
+                             'clinic':clinic,
+                             'client':client,
+                             'provider':provider})
+    except:
+        return Response({'Message':'FALSE'})
+
+
+@api_view(['POST'])
+def filterClinicProvider(request,format=None):
+    try:
+        if request.method == 'POST':
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            clinic = request.GET.get('clinic')
+            clinic = re.split(r"-|,", clinic)     
+            # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+            # if(check_token.TOKEN != (request.headers)['Authorization']):
+            #     return Response({'Message':'FALSE'})
+            start_date = str(start_month)+'-'+str(start_year)
+            startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+            if int(end_month)<12:
+                end_date = str(int(end_month)+1)+'-'+str(end_year)
+            else:
+                end_date = str('1-')+str(int(end_year)+1)
+            endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub         
+            obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
+                                      .filter(TIMESTAMP__lte=endDate)
+            if '' not in clinic:
+                obj = obj.filter(REGION__in=clinic)
+            client = obj.exclude(CLIENT_NAME__isnull=True)\
+                        .exclude(CLIENT_NAME__exact='nan')\
+                        .values_list('CLIENT_NAME',flat=True).distinct()
+            provider = obj.exclude(PROVIDER_NAME__isnull=True)\
+                          .exclude(PROVIDER_NAME__exact='nan')\
+                          .values_list('PROVIDER_NAME',flat=True).distinct()
+
+            provider = list(provider)
+            provider.sort()
+            client = list(client)
+            client.sort()
+            return Response({'Message':'TRUE',
+                             'client':client,
+                             'provider':provider})
+    except:
+        return Response({'Message':'FALSE'})
+
+
+
+@api_view(['POST'])
+def filterClientProvider(request,format=None):
+    try:
+        if request.method == 'POST':
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            client = request.GET.get('client')
+            client = re.split(r"-|,", client)     
+            # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+            # if(check_token.TOKEN != (request.headers)['Authorization']):
+            #     return Response({'Message':'FALSE'})
+            start_date = str(start_month)+'-'+str(start_year)
+            startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+            if int(end_month)<12:
+                end_date = str(int(end_month)+1)+'-'+str(end_year)
+            else:
+                end_date = str('1-')+str(int(end_year)+1)
+            endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub         
+            obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
+                                      .filter(TIMESTAMP__lte=endDate)
+            if '' not in client:
+                obj = obj.filter(REGION__in=client)
+
+            provider = obj.exclude(PROVIDER_NAME__isnull=True)\
+                          .exclude(PROVIDER_NAME__exact='nan')\
+                          .values_list('PROVIDER_NAME',flat=True).distinct()
+
+            provider = list(provider)
+            provider.sort()
+            return Response({'Message':'TRUE',
+                             'provider':provider})
+    except:
+        return Response({'Message':'FALSE'})
+
 #--------------------------------Enagement Moddel------------------------------------------------------
 
 @api_view(['POST'])
@@ -2272,26 +2455,24 @@ def createUser(request):
             return Response({'Message':'TRUE'})
     except:
         return Response({'Message':'FALSE'})
+
+
+# def index(request):
+#     df = pd.read_csv('01_doctor_scoring.csv')
+#     print(df.columns)
+#     for i in range(df.shape[0]):
+#         review_id = list(df['ID'])[i]
+#         score = list(df['MembertoProvider_Score'])[i] 
+#         # try:
+#         everside_nps.objects.filter(REVIEW_ID = review_id).update(MEMBER_PROVIDER_SCORE = score)
+
+#         print(i)
         
 
-
-
-# @api_view(['POST'])
-# def index(request):
-#     # try:
-#         if request.method == 'POST':
-#             name = request.GET.get('username')
-#             count = int(request.GET.get('count'))
-#             l = []
-#             for i in range(1,count+1):
-#                 idd = random.randint(10000,99999)
-#                 name = 'user-'+str(i)
-#                 user = {
-#                     'id':idd,
-#                     'name':name
-#                         }
-#                 l.append(user)
-                    
-#             return Response({'user_data':l})
-
-
+#     # for i in range(df.shape[0]):
+#     #     review_id = list(df['ID'])[i]
+#     #     member_provider_score = list(df['polarity_score'])[i]
+#     #     topic = list(df['topics'])[i]
+#     #     everside_nps.objects.filter(REVIEW_ID = review_id).update(POLARITY_SCORE = polarity_score,TOPIC = topic)
+#     #     print(i)
+#     return HttpResponse('Hello')

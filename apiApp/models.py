@@ -39,7 +39,8 @@ class everside_nps(models.Model):
     TIMESTAMP = models.BigIntegerField()
     POLARITY_SCORE = models.FloatField(default=0)
     TOPIC = models.CharField(max_length=200,default=' ')
-
+    ENCOUNTER_REASON = models.CharField(max_length=100, default='')
+    MEMBER_PROVIDER_SCORE = models.FloatField(default=0)
 
 class user_data(models.Model):
     FIRST_NAME = models.CharField(max_length=100)

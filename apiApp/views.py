@@ -1626,7 +1626,8 @@ def filterClinicProvider(request,format=None):
             obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
                                       .filter(TIMESTAMP__lte=endDate)
             if '' not in clinic:
-                obj = obj.filter(REGION__in=clinic)
+                obj = obj.filter(NPSCLINIC__in=clinic)
+
             client = obj.exclude(CLIENT_NAME__isnull=True)\
                         .exclude(CLIENT_NAME__exact='nan')\
                         .values_list('CLIENT_NAME',flat=True).distinct()
@@ -1655,7 +1656,8 @@ def filterClientProvider(request,format=None):
             end_year = request.GET.get('end_year')
             end_month = request.GET.get('end_month')
             client = request.GET.get('client')
-            client = re.split(r"-|,", client)     
+            client = (request.GET.get('client')).split(',')  
+            print(client)
             # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
             # if(check_token.TOKEN != (request.headers)['Authorization']):
             #     return Response({'Message':'FALSE'})
@@ -1669,7 +1671,7 @@ def filterClientProvider(request,format=None):
             obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
                                       .filter(TIMESTAMP__lte=endDate)
             if '' not in client:
-                obj = obj.filter(REGION__in=client)
+                obj = obj.filter(CLIENT_NAME__in=client)
 
             provider = obj.exclude(PROVIDER_NAME__isnull=True)\
                           .exclude(PROVIDER_NAME__exact='nan')\
@@ -1682,6 +1684,122 @@ def filterClientProvider(request,format=None):
     except:
         return Response({'Message':'FALSE'})
 
+
+
+@api_view(['POST'])
+def providerScoreCard(request,format=None):
+    start_year = request.GET.get('start_year')
+    start_month = request.GET.get('start_month')
+    end_year = request.GET.get('end_year')
+    end_month = request.GET.get('end_month')
+    provider = request.GET.get('provider')
+    # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+    # if(check_token.TOKEN != (request.headers)['Authorization']):
+    #     return Response({'Message':'FALSE'})
+    start_date = str(start_month)+'-'+str(start_year)
+    startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+    if int(end_month)<12:
+        end_date = str(int(end_month)+1)+'-'+str(end_year)
+    else:
+        end_date = str('1-')+str(int(end_year)+1)
+    endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub
+    obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
+                              .filter(TIMESTAMP__lte=endDate)\
+                              .filter(PROVIDER_NAME=provider)
+    info = obj.annotate(name = F('PROVIDER_NAME'),
+                        type = F('PROVIDERTYPE'),
+                        category = F('PROVIDER_CATEGORY')).values('name','type','category').first()
+    try:
+        promoter = obj.filter(nps_label = 'Promoter').count()
+        passive = obj.filter(nps_label = 'Passive').count()
+        detractor = obj.filter(nps_label = 'Detractor').count()
+        if promoter-detractor<0:
+            nps = 0
+        else:
+            nps = round(((promoter - detractor)/(promoter+passive+detractor))*100,2)
+
+        nps_card = {
+                    'promoter_count':promoter,
+                    'passive_count':passive,
+                    'detractor_count':detractor,
+                    'promoter':round((promoter/(promoter+passive+detractor))*100,2),
+                    'passive':round((passive/(promoter+passive+detractor))*100,2),
+                    'detractor':round((detractor/(promoter+passive+detractor))*100,2),
+                    'nps':nps
+        }
+        nps_pie = [
+                    {
+                        'color':'#00ac69',
+                        'label':'Promoters',
+                        'percentage':round((promoter/(promoter+passive+detractor))*100,2)
+                    },
+                    {
+                        'color':'#939799',
+                        'label':'Passives',
+                        'percentage':round((passive/(promoter+passive+detractor))*100,2)
+                    },
+                    {
+                        'color':'#DB2B39',
+                        'label':'Detractors',
+                        'percentage':round((detractor/(promoter+passive+detractor))*100,2)
+                    }
+                ]
+    
+    except:
+        months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov','Dec']
+        date = str(months[int(start_month)-1])+'-'+start_year+' to '+str(months[int(end_month)-1])+'-'+end_year
+        return Response({'Message':'ERROR','Comment':'Selected Provider not present in this date range ( '+date+' )'})
+    member_count = obj.count()
+    comment_count = obj.annotate(review = Func(
+                                            Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
+                                            V('nan'), V(''),
+                                            function='replace'),).exclude(review = '  ').count()
+                                
+    reason_count = obj.values_list('ENCOUNTER_REASON',flat=0).distinct().count()
+    alerts_count = obj.filter(sentiment_label='Extreme').count() 
+
+    total_card = {
+                    'member_count':member_count,
+                    'comment_count':comment_count,
+                    'reason_count':reason_count,
+                    'alerts_count':alerts_count
+                 }
+    statistic = obj.values('SURVEY_MONTH').annotate(
+                                                    count = Count(F('REVIEW_ID')),
+                                                    reason = Count('ENCOUNTER_REASON',distinct=True),
+                                                    month = Substr(F('SURVEY_MONTH'),1,3),\
+                                                    year = Cast(F('SURVEY_YEAR'),IntegerField()),
+
+    ).order_by('SURVEY_MONTH')
+    statistic = list(statistic)
+    statistic.sort(key = lambda x: dt.strptime(x['SURVEY_MONTH'], '%b-%y')) 
+
+    comments = obj.values('id').annotate(
+                                        review = Func(
+                                            Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
+                                            V('nan'), V(''),
+                                            function='replace'),
+                                        label = F('sentiment_label'),
+                                        timestamp = F('SURVEY_MONTH'), 
+                                        time = F('TIMESTAMP'),
+                                        clinic = F('NPSCLINIC'),
+                                        reason = F('ENCOUNTER_REASON'),
+                                        topic = F('TOPIC'),
+                                        )
+    comments = comments.exclude(review = '  ')
+    comments = sorted(comments, key=itemgetter('time'),reverse=True)
+    
+    res = {
+           'Message':'TRUE',
+           'provider_info':info,
+           'provider_nps':nps_card,
+           'provider_nps_pie':nps_pie,
+           'provider_total_card':total_card,
+           'provider_statistics':statistic,
+           'provider_comments':comments 
+    }
+
+    return Response(res)
 #--------------------------------Enagement Moddel------------------------------------------------------
 
 @api_view(['POST'])

@@ -54,6 +54,8 @@ urlpatterns = [
     path('providerDataDownload',views.providerDataDownload,name='providerDataDownload'),
     path('clinicDataDownload',views.clinicDataDownload,name='clinicDataDownload'),
     path('clientDataDownload',views.clientDataDownload,name='clientDataDownload'),
+    path('providerScoreCard',views.providerScoreCard,name='providerScoreCard'),
+    
     
     
     #------------------ Files Delete -------------------------------------
@@ -65,6 +67,7 @@ urlpatterns = [
     path('createUser',views.createUser,name='createUser'),
     path('userList',views.userList,name='userList'),
     path('deleteUser',views.deleteUser,name='deleteUser'),
+
 
 
     

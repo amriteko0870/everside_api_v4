@@ -1,7 +1,11 @@
+from base64 import urlsafe_b64encode
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.policy import default
 from genericpath import getsize
 from http import client
 import json
+from pydoc import resolve
 from matplotlib.pyplot import polar
 import numpy as np
 import pandas as pd
@@ -23,6 +27,7 @@ from django.db.models.functions import Concat,Cast,Substr
 from django.contrib.auth.hashers import make_password,check_password
 from django.db.models import Min, Max
 from django.db.models import Subquery
+from .emai_auth import gmail_authenticate
 #----------------------------restAPI--------------------------------------------------
 from rest_framework.decorators import parser_classes
 from rest_framework.parsers import MultiPartParser,FormParser
@@ -34,6 +39,7 @@ from rest_framework.parsers import MultiPartParser,FormParser
 from apiApp.models import clientTopic, clinicTopic, engagement_file_data, everside_nps, providerTopic, user_data
 #--------------------------extra libs------------------------------------------------
 from apiApp.extra_vars import region_names,prob_func
+from apiApp.send_email import email_creation
 # Create your views here.
 #-------------- Global Variable--------------------------------------------------------
 timestamp_sub = 86400 #+19800
@@ -1685,6 +1691,48 @@ def filterClientProvider(request,format=None):
         return Response({'Message':'FALSE'})
 
 
+@api_view(['GET'])
+def providerCommentDownload(request,format=None):
+    start_year = request.GET.get('start_year')
+    start_month = request.GET.get('start_month')
+    end_year = request.GET.get('end_year')
+    end_month = request.GET.get('end_month')
+    provider = request.GET.get('provider')
+    start_date = str(start_month)+'-'+str(start_year)
+    startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+    if int(end_month)<12:
+        end_date = str(int(end_month)+1)+'-'+str(end_year)
+    else:
+        end_date = str('1-')+str(int(end_year)+1)
+    endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub
+    obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
+                              .filter(TIMESTAMP__lte=endDate)\
+                              .filter(PROVIDER_NAME=provider)
+    comments = obj.values('id').annotate(
+                                        review = Func(
+                                            Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
+                                            V('nan'), V(''),
+                                            function='replace'),
+                                        label = F('sentiment_label'),
+                                        timestamp = F('SURVEY_MONTH'), 
+                                        time = F('TIMESTAMP'),
+                                        clinic = F('NPSCLINIC'),
+                                        reason = F('ENCOUNTER_REASON'),
+                                        topic = F('TOPIC'),
+                                        )
+    comments = comments.exclude(review = '  ')
+    comments = sorted(comments, key=itemgetter('time'),reverse=True)
+    comments_df = pd.DataFrame(list(comments))
+    comments_df = comments_df[['timestamp','review','topic','reason','label']]
+    comments_df.rename(columns={'review':'comments'}, inplace=True)
+    comments_df.rename(columns={'reason':'Visit Reason'}, inplace=True)
+    comments_df.rename(columns={'label':'Sentiment'}, inplace=True)
+    comments_df.columns = comments_df.columns.str.upper()
+    username = (request.GET.get('username'))
+    a = 'uploads/engagement_download_files/'+username+'_provider_comment.csv'
+    comments_df.to_csv(a,index=False)
+    response = FileResponse(open(a, 'rb'))
+    return response
 
 @api_view(['POST'])
 def providerScoreCard(request,format=None):
@@ -1693,9 +1741,10 @@ def providerScoreCard(request,format=None):
     end_year = request.GET.get('end_year')
     end_month = request.GET.get('end_month')
     provider = request.GET.get('provider')
-    # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
-    # if(check_token.TOKEN != (request.headers)['Authorization']):
-    #     return Response({'Message':'FALSE'})
+    print("######################## : ",(request.data)['username'])
+    check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+    if(check_token.TOKEN != (request.headers)['Authorization']):
+        return Response({'Message':'FALSE'})
     start_date = str(start_month)+'-'+str(start_year)
     startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
     if int(end_month)<12:
@@ -1708,7 +1757,20 @@ def providerScoreCard(request,format=None):
                               .filter(PROVIDER_NAME=provider)
     info = obj.annotate(name = F('PROVIDER_NAME'),
                         type = F('PROVIDERTYPE'),
-                        category = F('PROVIDER_CATEGORY')).values('name','type','category').first()
+                        category = F('PROVIDER_CATEGORY'),
+                        score = Avg('MEMBER_PROVIDER_SCORE')).values('name','type','category','score').first()
+    print(info)
+    n = float(info['score'])*10
+    l = []
+    fill = n//20
+    n_fill  = n%20
+    for i in range(5):
+        if i<fill:
+            l.append(100)
+        elif  i==fill:
+            l.append(round(n_fill*5))
+        else:
+            l.append(0)
     try:
         promoter = obj.filter(nps_label = 'Promoter').count()
         passive = obj.filter(nps_label = 'Passive').count()
@@ -1792,6 +1854,7 @@ def providerScoreCard(request,format=None):
     res = {
            'Message':'TRUE',
            'provider_info':info,
+           'provider_star':l,
            'provider_nps':nps_card,
            'provider_nps_pie':nps_pie,
            'provider_total_card':total_card,
@@ -1800,6 +1863,57 @@ def providerScoreCard(request,format=None):
     }
 
     return Response(res)
+
+@api_view(['POST'])
+def providerEmail(request,format=None):
+    start_year = request.GET.get('start_year')
+    start_month = request.GET.get('start_month')
+    end_year = request.GET.get('end_year')
+    end_month = request.GET.get('end_month')
+    provider = request.GET.get('provider')
+
+    start_date = str(start_month)+'-'+str(start_year)
+    startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
+    if int(end_month)<12:
+        end_date = str(int(end_month)+1)+'-'+str(end_year)
+    else:
+        end_date = str('1-')+str(int(end_year)+1)
+    endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub
+
+
+    months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov','Dec']
+    
+    query = everside_nps.objects.filter(PROVIDER_NAME = provider,
+                                         TIMESTAMP__gte=startDate,
+                                         TIMESTAMP__lte=endDate)
+    name = provider
+    p_type = query.values_list('PROVIDERTYPE',flat=True).distinct().last()
+    date_range = str(months[int(start_month)-1])+" "+str(start_year)+" - "+str(months[int(end_month)-1])+" "+str(end_year)
+    member_count = query.count() if query.count() > 0 else 'Nil' 
+    p_category = query.values_list('PROVIDER_CATEGORY',flat=True).distinct().last()
+    star_score = round((query.aggregate(score = Avg('MEMBER_PROVIDER_SCORE')))['score'],2)
+    extreme_count = query.filter(sentiment_label='Extreme').count() if query.filter(sentiment_label='Extreme').count() > 0 else 'Nil'
+    visit_reason = query.values_list('ENCOUNTER_REASON',flat=True).distinct()[:5]
+    positive_topic = list(set(list(query.filter(sentiment_label='Positive').values('TOPIC','MEMBER_PROVIDER_SCORE').order_by('MEMBER_PROVIDER_SCORE').values_list('TOPIC',flat=True))))[:3]
+    negative_topic = list(set(list(query.filter(sentiment_label__in=['Negative','Extreme']).values('TOPIC','MEMBER_PROVIDER_SCORE').order_by('MEMBER_PROVIDER_SCORE').values_list('TOPIC',flat=True))))[:3]
+    text = email_creation(name,p_type,date_range,member_count,p_category,star_score,extreme_count,visit_reason,positive_topic,negative_topic)
+    
+    service = gmail_authenticate()
+    
+    message = MIMEMultipart('alternative')
+    message['to'] = 'vivek.k@ekoinfomatics.com'
+    message['from'] = 'nps@ekoinfomatics.com'
+    message['subject'] = 'Provider Scrore card for '+provider
+
+    mime_type = MIMEText(text, 'html')
+    message.attach(mime_type)
+    body1 = {'raw': urlsafe_b64encode(message.as_bytes()).decode()}
+
+    result = service.users().messages().send(
+      userId="me",
+      body=body1
+    ).execute()
+    return Response({'Message':"TRUE","Status":"Sent"})
 #--------------------------------Enagement Moddel------------------------------------------------------
 
 @api_view(['POST'])
@@ -2593,4 +2707,86 @@ def createUser(request):
 #     #     topic = list(df['topics'])[i]
 #     #     everside_nps.objects.filter(REVIEW_ID = review_id).update(POLARITY_SCORE = polarity_score,TOPIC = topic)
 #     #     print(i)
+#     return HttpResponse('Hello')
+
+
+
+
+#_----------------------------------------------------------------------------
+
+# from apiApp.emai_auth import gmail_authenticate
+# from email.mime.multipart import MIMEMultipart
+# from base64 import urlsafe_b64decode, urlsafe_b64encode
+# from email.mime.text import MIMEText
+
+
+
+# def index(request):
+#     SCOPES = ['https://mail.google.com/']
+
+
+
+#     # get the Gmail API service
+#     service = gmail_authenticate()
+
+#     message = MIMEMultipart('alternative')
+#     message['to'] = 'vivek.k@ekoinfomatics.com,amrit.s@ekoinfomatics.com'
+#     message['from'] = 'nps@ekoinfomatics.com'
+#     message['subject'] = 'hello'
+#     text = """
+#     <!DOCTYPE html>
+#     <html >
+#     <head>
+#         <meta charset="UTF-8">
+#         <title>Email Verified</title>
+#     </head>
+#     <body>
+#         <head style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#             <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
+#     <meta name="viewport" content="width=device-width" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#     <title style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">Hagbad Financial</title>
+#     </head>
+#     <body style="margin: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; padding: 0; border-top: 2px solid #26334D; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; background-color: white; height: 100%; line-height: 1.6; width: 100%;">
+#     <table class="body-wrap" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px; width: 100%; background-color: white;">
+#         <tr style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#         <td style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px; vertical-align: top;"></td>
+#         <td width="400" class="container" style="font-size: 14px; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; padding: 0; line-height: 22px; vertical-align: top; margin: 0 auto; display: block; max-width: 400px; clear: both;">
+#             <div class="content" style="padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px; margin: 0 auto; max-width: 400px; display: block;">
+#             <table width="100%" cellpadding="0" cellspacing="0" class="main" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#                 <tr style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#                 <td class="logo" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px; vertical-align: top; text-align: center;">
+#                     <img src="https://i.imgur.com/jlhOdC3.png" width="200" style="padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px; max-width: 100%; margin: 30px 0;">
+#                 </td>
+#                 </tr>
+#                 <tr style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#                 <td class="content-wrap" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px; vertical-align: top;">
+#                     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#                         <p style="margin: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px; font-weight: normal; margin-bottom: 0; padding: 0 20px;"><strong style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 22px; color: #596C80;">Dear {}, </strong><br><br><strong style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 22px; color: #596C80;">Your email is successfully verified</strong>,
+#                         <br>Welcome to Hagbad Financial</p>
+#                     <tr style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px;">
+#                         <td class="action" style="margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #8F9BB3; font-size: 14px; line-height: 22px; vertical-align: top; padding-top: 20px;">
+#                         <a class="btn-primary" style="line-height: 22px; margin: 0; box-sizing: border-box; font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; color: #ffffff; font-size: 25px; padding: 20px; display: block; font-weight: bold; background: #00E056; border-radius: 3px; text-decoration: none; text-align: center;">Verified <i class="fa fa-check" aria-hidden="true"></i></a>
+#                         </td>
+#                     </tr>
+#                     </table>
+#                 </td>
+#                 </tr>
+#             </table>
+#             </div>
+#         </td>
+#         </tr>
+#     </table>
+#     </body>
+#     </body>
+#     </html>
+#     """.format('Vivek Khanal')
+#     mime_type = MIMEText(text, 'html')
+#     message.attach(mime_type)
+#     body1 = {'raw': urlsafe_b64encode(message.as_bytes()).decode()}
+
+#     service.users().messages().send(
+#         userId="me",
+#         body=body1
+#         ).execute()
 #     return HttpResponse('Hello')

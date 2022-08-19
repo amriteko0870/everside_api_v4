@@ -55,6 +55,10 @@ urlpatterns = [
     path('clinicDataDownload',views.clinicDataDownload,name='clinicDataDownload'),
     path('clientDataDownload',views.clientDataDownload,name='clientDataDownload'),
     path('providerScoreCard',views.providerScoreCard,name='providerScoreCard'),
+    # path('providerEmail',views.providerEmail,name='providerEmail'),
+    path('providerCommentDownload',views.providerCommentDownload,name='providerCommentDownload'),
+    
+    
     
     
     

@@ -6,6 +6,7 @@ from genericpath import getsize
 from http import client
 import json
 from pydoc import resolve
+from unicodedata import category
 from matplotlib.pyplot import polar
 import numpy as np
 import pandas as pd
@@ -1344,7 +1345,8 @@ def providersData(request,format=None):
                                                                 ),
                                                                 default=F('nps_abs'),
                                                                 output_field=FloatField()
-                                                              )
+                                                              ),
+                                                    score = twoDecimal(Avg('MEMBER_PROVIDER_SCORE'))
                                                 ).order_by('provider_name')
 
             providers_list = providers.values_list('PROVIDER_NAME',flat=True).distinct()
@@ -1741,7 +1743,7 @@ def providerScoreCard(request,format=None):
     end_year = request.GET.get('end_year')
     end_month = request.GET.get('end_month')
     provider = request.GET.get('provider')
-    print("######################## : ",(request.data)['username'])
+    # print("######################## : ",(request.data)['username'])
     check_token = user_data.objects.get(USERNAME = (request.data)['username'])
     if(check_token.TOKEN != (request.headers)['Authorization']):
         return Response({'Message':'FALSE'})
@@ -1755,11 +1757,20 @@ def providerScoreCard(request,format=None):
     obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
                               .filter(TIMESTAMP__lte=endDate)\
                               .filter(PROVIDER_NAME=provider)
-    info = obj.annotate(name = F('PROVIDER_NAME'),
-                        type = F('PROVIDERTYPE'),
-                        category = F('PROVIDER_CATEGORY'),
-                        score = Avg('MEMBER_PROVIDER_SCORE')).values('name','type','category','score').first()
-    print(info)
+    name = provider
+    p_type = obj.values_list('PROVIDERTYPE',flat=True).last()
+    p_cat = obj.values_list('PROVIDER_CATEGORY',flat=True).last()
+    score_list = list(obj.values_list('MEMBER_PROVIDER_SCORE',flat=True))
+    avg_score = sum(score_list)/len(score_list)
+    # print("################################## ",avg_score)
+    info = {
+            'name' : name,
+            'type':p_type,
+            'category': p_cat,
+            'score':avg_score
+            }
+
+    # print(info)
     n = float(info['score'])*10
     l = []
     fill = n//20
@@ -1829,6 +1840,7 @@ def providerScoreCard(request,format=None):
     statistic = obj.values('SURVEY_MONTH').annotate(
                                                     count = Count(F('REVIEW_ID')),
                                                     reason = Count('ENCOUNTER_REASON',distinct=True),
+                                                    score = twoDecimal(Avg('MEMBER_PROVIDER_SCORE')),
                                                     month = Substr(F('SURVEY_MONTH'),1,3),\
                                                     year = Cast(F('SURVEY_YEAR'),IntegerField()),
 

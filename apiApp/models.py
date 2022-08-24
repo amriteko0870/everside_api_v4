@@ -29,7 +29,6 @@ class everside_nps(models.Model):
     PROVIDERTYPE = models.CharField(max_length=100)
     PROVIDER_CATEGORY = models.CharField(max_length=100)
     CLIENT_ID = models.CharField(max_length=100)
-    CLIENT_NAICS = models.CharField(max_length=100)
     sentiment_label = models.CharField(max_length=100)
     nps_label = models.CharField(max_length=100)
     CLIENT_NAME = models.CharField(max_length=100)

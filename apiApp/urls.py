@@ -3,6 +3,7 @@ from unicodedata import name
 from django.urls import include, path
 
 from . import views
+from apiApp.data_upload import db_upload,provider_cat_set
 
 urlpatterns = [
     #-------------------Filters------------------------------------
@@ -80,6 +81,7 @@ urlpatterns = [
     
     
 
-
+    # path('',db_upload,name='index'),
+    # path('',provider_cat_set,name='index'),
     # path('',views.index,name='index'),   
 ]

@@ -1295,12 +1295,12 @@ def providersData(request,format=None):
             region = re.split(r"-|,", region)
             clinic = re.split(r"-|,", clinic)
             client = (request.GET.get('client')).split(',')
-            try:
-                check_token = user_data.objects.get(USERNAME = (request.data)['username'])
-                if(check_token.TOKEN != (request.headers)['Authorization']):
-                    return Response({'Message':'FALSE'})  
-            except:
-                return Response({'Message':'FALSE'})  
+            # try:
+            #     check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+            #     if(check_token.TOKEN != (request.headers)['Authorization']):
+            #         return Response({'Message':'FALSE'})  
+            # except:
+            #     return Response({'Message':'FALSE'})  
             start_date = str(start_month)+'-'+str(start_year)
             startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
             if int(end_month)<12:
@@ -1308,7 +1308,6 @@ def providersData(request,format=None):
             else:
                 end_date = str('1-')+str(int(end_year)+1)
             endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub 
-        
             providers = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate).values()
             
             state = region
@@ -1320,7 +1319,7 @@ def providersData(request,format=None):
                 providers = providers.filter(NPSCLINIC__in = clinic)
             if '' not in client:
                 providers = providers.filter(CLIENT_NAME__in = client)
-            
+            # providers = providers.objects.raw('SELECT * from apiApp_everside_nps group by provider_name')
             providers = providers.exclude(PROVIDER_NAME__in = ['nan']).annotate(provider_name = F('PROVIDER_NAME'))\
                                             .values('provider_name')\
                                             .annotate(
@@ -1354,7 +1353,6 @@ def providersData(request,format=None):
             provider_topics = providerTopic.objects.exclude(PROVIDER_NAME__in = ['nan']).filter(PROVIDER_NAME__in = providers_list).values()
             providers = sorted(list(providers), key=itemgetter('provider_name'))
             provider_topics = sorted(list(provider_topics), key=itemgetter('PROVIDER_NAME'))
-
         return Response({'Message':'True','data':providers,'topic':provider_topics})
     except:
         return Response({'Message':'FALSE'})

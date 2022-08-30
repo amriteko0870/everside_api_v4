@@ -2382,6 +2382,7 @@ def providerDataDownload(request,format=None):
                                                     average_nps=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
                                                     provider_type = F('PROVIDERTYPE'),
                                                     provider_category = F('PROVIDER_CATEGORY'),
+                                                    score = twoDecimal(Avg('MEMBER_PROVIDER_SCORE')),
                                                     ).order_by('provider_name')
 
             providers_list = providers.values_list('PROVIDER_NAME',flat=True).distinct()
@@ -2390,13 +2391,14 @@ def providerDataDownload(request,format=None):
             providers = sorted(list(providers), key=itemgetter('provider_name'))
             provider_topics = sorted(list(provider_topics), key=itemgetter('PROVIDER_NAME'))
             providers_df = pd.concat([pd.DataFrame(providers),pd.DataFrame(provider_topics)[['POSITIVE_TOPIC','NEGATIVE_TOPIC']]],axis=1)
-            providers_df = providers_df[['provider_type','provider_name','provider_category','POSITIVE_TOPIC','NEGATIVE_TOPIC','count','average_nps']]
+            providers_df = providers_df[['provider_type','provider_name','provider_category','POSITIVE_TOPIC','NEGATIVE_TOPIC','count','score','average_nps']]
             providers_df.rename(columns={'provider_type':'Type',
                                 'provider_name':'Name',
                                     'provider_category':'Category',
                                     'POSITIVE_TOPIC':'Top_Positive_Topic',
                                     'NEGATIVE_TOPIC':'Top_Negative_Topic',
                                     'count':'Survey_Count',
+                                    'score':'Score',
                                     'average_nps':'NPS'}, inplace=True)
             a = 'uploads/engagement_download_files/'+username+'_provider_data.csv'
             providers_df.to_csv(a,index=False)

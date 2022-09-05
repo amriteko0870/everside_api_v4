@@ -10,7 +10,7 @@ from django.db.models.functions import Concat,Cast,Substr
 from django.db.models import Min
 
 def db_upload(request):
-    df = pd.read_csv('')
+    df = pd.read_csv('05_final_aug_2022.csv')
     df.fillna('Unknown', inplace=True)
     region = pd.read_csv("regionState.csv")
     for i in range(df.shape[0]):
@@ -175,6 +175,16 @@ def db_upload(request):
         print("CL",c)
         c = c + 1 
         # break
+    
+    #---------------------------- Provider type and category handle---------------------------------
+    count = everside_nps.objects.all().values_list('PROVIDER_NAME',flat=True).distinct()
+    for i in range(len(count)):
+        p_details = everside_nps.objects.filter(PROVIDER_NAME=count[i]).values('PROVIDERTYPE','PROVIDER_CATEGORY')
+        p_update = everside_nps.objects.filter(PROVIDER_NAME=count[i])\
+                                       .update(PROVIDERTYPE = p_details.last()['PROVIDERTYPE'],
+                                               PROVIDER_CATEGORY = p_details.last()['PROVIDER_CATEGORY'])
+
+        print('H',i)
     return HttpResponse('hello')
 
 
@@ -182,11 +192,9 @@ def provider_cat_set(request):
     count = everside_nps.objects.all().values_list('PROVIDER_NAME',flat=True).distinct()
     for i in range(len(count)):
         p_details = everside_nps.objects.filter(PROVIDER_NAME=count[i]).values('PROVIDERTYPE','PROVIDER_CATEGORY')
-        print(p_details.last()['PROVIDERTYPE'],p_details.last()['PROVIDER_CATEGORY'])
         p_update = everside_nps.objects.filter(PROVIDER_NAME=count[i])\
                                        .update(PROVIDERTYPE = p_details.last()['PROVIDERTYPE'],
                                                PROVIDER_CATEGORY = p_details.last()['PROVIDER_CATEGORY'])
 
         print(i)
-    # print(count)
     return HttpResponse('Hello')

@@ -2802,3 +2802,8 @@ def createUser(request):
 #         body=body1
 #         ).execute()
 #     return HttpResponse('Hello')
+
+
+
+
+#result = table.objects.filter(string__contains='pattern')

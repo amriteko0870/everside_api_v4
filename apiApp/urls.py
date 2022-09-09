@@ -85,7 +85,7 @@ urlpatterns = [
     
     
 
-    path('',db_upload,name='index'),
+    # path('',db_upload,name='index'),
     # path('',provider_cat_set,name='index'),
     # path('',views.index,name='index'),   
 ]+static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)

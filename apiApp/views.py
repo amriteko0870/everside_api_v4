@@ -1663,7 +1663,7 @@ def filterClientProvider(request,format=None):
             end_month = request.GET.get('end_month')
             client = request.GET.get('client')
             client = (request.GET.get('client')).split(',')  
-            print(client)
+            # print(client)
             # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
             # if(check_token.TOKEN != (request.headers)['Authorization']):
             #     return Response({'Message':'FALSE'})
@@ -1742,9 +1742,9 @@ def providerScoreCard(request,format=None):
     end_month = request.GET.get('end_month')
     provider = request.GET.get('provider')
     # print("######################## : ",(request.data)['username'])
-    check_token = user_data.objects.get(USERNAME = (request.data)['username'])
-    if(check_token.TOKEN != (request.headers)['Authorization']):
-        return Response({'Message':'FALSE'})
+    # check_token = user_data.objects.get(USERNAME = (request.data)['username'])
+    # if(check_token.TOKEN != (request.headers)['Authorization']):
+    #     return Response({'Message':'FALSE'})
     start_date = str(start_month)+'-'+str(start_year)
     startDate = (time.mktime(datetime.datetime.strptime(start_date,"%m-%Y").timetuple())) - timestamp_start
     if int(end_month)<12:
@@ -1861,6 +1861,64 @@ def providerScoreCard(request,format=None):
     comments = comments.exclude(review = '  ')
     comments = sorted(comments, key=itemgetter('time'),reverse=True)
     
+    total_count = obj
+    positive_count = obj.filter(sentiment_label='Positive').values()
+    negative_count = obj.filter(sentiment_label='Negative').values()
+    extreme_count = obj.filter(sentiment_label='Extreme').values()
+    neutral_count = obj.filter(sentiment_label='Neutral').values()
+
+    if(len(positive_count)!=0):
+        positive = round(len(positive_count)/len(total_count)*100)
+        if positive == 0:
+            positive = round(len(positive_count)/len(total_count)*100,2)
+    else:
+        positive = 0
+    
+    if(len(negative_count)!=0):
+        negative = round(len(negative_count)/len(total_count)*100)
+        if negative == 0:
+            negative = round(len(negative_count)/len(total_count)*100,2)
+    else:
+        negative = 0
+    
+    if(len(extreme_count)!=0):
+        extreme = round(len(extreme_count)/len(total_count)*100)
+        if extreme == 0:
+            extreme = round(len(extreme_count)/len(total_count)*100,2)
+    else:
+        extreme = 0
+    
+    if(len(neutral_count)!=0):
+        neutral = round(len(neutral_count)/len(total_count)*100)
+        if neutral == 0:
+            neutral = round(len(neutral_count)/len(total_count)*100,2)
+    else:
+        neutral = 0
+    
+    nss ={
+            "nss_score":round(positive-negative-extreme),
+            "total": len(total_count),
+            "positive":positive,
+            "total_positive":len(positive_count),
+            "negative":negative,
+            "total_negative":len(negative_count),
+            "extreme":extreme,
+            "total_extreme":len(extreme_count),
+            "neutral":neutral,
+            "total_neutral": len(neutral_count), 
+        }
+    
+    top_positive = list(obj.filter(sentiment_label = 'Positive')\
+                      .values('POLARITY_SCORE','TOPIC')\
+                      .order_by('-POLARITY_SCORE')\
+                      .values_list('TOPIC',flat=True)\
+                      .distinct())[:5]
+
+    top_negative = list(obj.filter(sentiment_label__in = ['Negative','Extreme'])\
+                      .values('POLARITY_SCORE','TOPIC')\
+                      .order_by('POLARITY_SCORE')\
+                      .values_list('TOPIC',flat=True)\
+                      .distinct())[:5]
     res = {
            'Message':'TRUE',
            'provider_info':info,
@@ -1869,7 +1927,10 @@ def providerScoreCard(request,format=None):
            'provider_nps_pie':nps_pie,
            'provider_total_card':total_card,
            'provider_statistics':statistic,
-           'provider_comments':comments 
+           'provider_comments':comments,
+           'nss':nss,
+           'top_positive':top_positive,
+           'top_negative':top_negative,
     }
 
     return Response(res)

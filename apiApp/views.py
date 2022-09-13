@@ -2368,6 +2368,7 @@ def totalCommentsDownload(request,format=None):
                                                             time = F('TIMESTAMP'),
                                                             clinic = F('NPSCLINIC'),
                                                             client = F('CLIENT_NAME'),
+                                                            provider = F('PROVIDER_NAME'),
                                                             topic = F('TOPIC'),
                                                             question_type = V('REASONNPSSCORE', output_field=CharField())
                                                             
@@ -2375,8 +2376,10 @@ def totalCommentsDownload(request,format=None):
             all_comments = all_comments.exclude(review = '  ')
             all_comments = sorted(all_comments, key=itemgetter('time'),reverse=True)
             all_comments_df = pd.DataFrame(list(all_comments))
-            all_comments_df = all_comments_df[['timestamp','review','topic','client','clinic','label']]
+            all_comments_df = all_comments_df[['timestamp','review','topic','provider','client','clinic','label']]
             all_comments_df.rename(columns={'review':'comments'}, inplace=True)
+            all_comments_df.rename(columns={'label':'sentiment'}, inplace=True)
+            all_comments_df.rename(columns={'timestamp':'date'}, inplace=True)
             all_comments_df.columns = all_comments_df.columns.str.upper()
             username = (request.GET.get('username'))
             a = 'uploads/engagement_download_files/'+username+'_all_comments.csv'

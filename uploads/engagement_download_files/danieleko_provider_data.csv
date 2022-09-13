@@ -1,0 +1,306 @@
+Type,Name,Category,Top_Positive_Topic,Top_Negative_Topic,Survey_Count,Score,NPS
+DO,Alexander Bingcang,Physician,Good doctor,Testing and Treatment,31,8.71,71
+NP,Amanda Binder,APP,Concerns addressed,No Topic,38,8.78,82
+MD,Amanda Gracia,Physician,Good doctor,Blood work and vaccine,31,8.79,84
+FNP,Amanda Lail,APP,Good doctor,Blood work and vaccine,5,8.35,80
+NP,Amanda Seymour,APP,Good doctor,Testing and Treatment,12,8.46,42
+FNP-C,Amber Apple,Unknown,Good doctor,Testing and Treatment,74,8.86,88
+FNP,Amber Handshoe,APP,Services,Appointment,76,8.33,83
+DO,Ameena Jiwani,Physician,Concerns addressed,Blood work and vaccine,82,8.58,85
+MD,Amy Jo Friedman,Physician,Good doctor,Blood work and vaccine,97,8.74,86
+NP,AnJanean Hicks,APP,Good doctor,Appointment,50,8.83,90
+MD,Andrea Lui,Physician,No Topic,No Topic,2,8.6,100
+FNP-C,Andrea Miles,Unknown,Good doctor,Blood work and vaccine,67,8.66,76
+MD,Anette Lane,Physician,Concerns addressed,Lab result and services,99,8.98,89
+PA,Angela Bryant,APP,Good doctor,Lab result and services,67,8.7,73
+NP,Angela Crowe,APP,No Topic,No Topic,3,7.6,33
+FNP-C,Angela Frantsi,Unknown,Good doctor,Blood work and vaccine,44,8.6,80
+NP,Ashley Lichtle,APP,Services,Blood work and vaccine,13,9.03,85
+NP,Beth Thompson,APP,Good doctor,Blood work and vaccine,18,8.79,89
+PA,Bianca Bottiaux,APP,Good doctor,Testing and Treatment,89,8.15,48
+FNP,Billie Buehrer,APP,Good doctor,Testing and Treatment,59,8.8,85
+DO,Binita Prajapati,Physician,Good doctor,Blood work and vaccine,39,8.41,95
+NP,Bonnie Hill,APP,Services,No Topic,3,9.17,100
+NP,Brandon Baker,APP,Good doctor,Blood work and vaccine,14,8.12,93
+DO,Brian Sammon,Physician,Good doctor,Appointment,59,8.72,83
+NP,Brianna Youngwolfe,APP,Services,Testing and Treatment,55,8.43,73
+MD,Brooke Ballard,Physician,Good doctor,No Topic,55,9.02,85
+NP,Bruce Suchland,APP,Good doctor,Blood work and vaccine,40,8.82,80
+M.D.,Bryon Thomas,Unknown,Good doctor,Testing and Treatment,175,8.28,66
+Unknown,Care Team- Colorado,Unknown,Good doctor,Testing and Treatment,13,8.8,92
+nan,Care Team- Ohio,nan,Good doctor,Testing and Treatment,32,8.76,59
+DO,Cari Bollweg,Physician,Good doctor,Unskilled,49,8.75,73
+NP,Carly Granata,APP,Good doctor,No Topic,10,6.05,20
+MD,Caryn Theobald,Physician,Services,Lab result and services,53,8.49,79
+"MD, FAAFP",Chad Turner,Unknown,Good doctor,Blood work and vaccine,8,9.28,100
+NP,Chandra Petro,APP,Good doctor,Lab result and services,14,8.27,79
+FNP,Channah Klor,APP,Good doctor,Testing and Treatment,60,8.76,83
+FNP-BC,Cheryl Maes,Unknown,Concerns addressed,Lab result and services,12,7.81,100
+DO,Christine Bourgeois,Physician,Concerns addressed,Testing and Treatment,90,8.83,87
+MD,Christine Humphrey,Physician,Good doctor,Testing and Treatment,36,8.36,78
+FNP,Christine Williams,APP,Good doctor,Testing and Treatment,25,8.55,84
+DO,Cindy Leahy,Physician,Good doctor,No Topic,1,9.5,100
+DO,Claire Osborn,Physician,Good doctor,Appointment,45,8.66,91
+NP,Claudette Rhoades,APP,Concerns addressed,Unskilled,2,6.6,0
+DO,Clifford Mitcheff,Physician,Good doctor,Testing and Treatment,143,8.92,80
+NP,Colbe Ingels,APP,Professionalism,Appointment,6,8.18,50
+NP,Colleen Henderson,APP,Good doctor,Blood work and vaccine,66,8.94,95
+NP,Courtney Ballina,APP,Good doctor,Appointment,30,8.7,70
+DO,Cynthia Caja,Physician,Good doctor,Blood work and vaccine,70,8.95,91
+RN,Cynthia Thomas,Unknown,Good doctor,No Topic,1,10.0,100
+MD,Daniel Goldman,Physician,Engagement with Patient's,Unskilled,52,8.49,75
+MD,Daniel Walters,Physician,Professionalism,No Topic,25,9.04,68
+NP,Danielle Solares,APP,Good doctor,Blood work and vaccine,46,9.03,76
+NP,Darla Rorick,APP,Good doctor,Unskilled,51,8.52,84
+MD,Darly Bernardo,Physician,Concerns addressed,Appointment,18,8.39,61
+DO,David Bean,Physician,Good doctor,Blood work and vaccine,21,8.49,95
+NP,David Cothran,APP,Good doctor,Blood work and vaccine,43,7.48,37
+MD,David Malfese,Physician,Good doctor,Blood work and vaccine,73,8.62,70
+PA,David Reusser,APP,Services,No Topic,18,9.01,89
+MD,David Smith,Physician,Good doctor,Blood work and vaccine,97,8.57,89
+PA,David Wester,APP,Good doctor,Blood work and vaccine,117,8.63,85
+NP,Dawn Aldrich,APP,Good doctor,Lab result and services,50,8.51,86
+NP,DeNay Dreiband,APP,Good doctor,No Topic,13,9.0,62
+MD,Deepa Kordick,Physician,Good doctor,Unskilled,52,8.23,77
+FNP,Donna Bridger,APP,Good doctor,No Topic,58,8.52,62
+NP,Donna Carter,APP,Good doctor,No Topic,28,8.93,89
+FNP,Donna Cooper,APP,Services,Testing and Treatment,44,8.59,73
+NP,Donna Woodward,APP,Services,No Topic,19,8.39,100
+NP,Elizabeth Madlem,APP,Engagement with Patient's,No Topic,2,9.0,50
+NP,Ellen Frazier,APP,Good doctor,Lab result and services,46,8.94,91
+DO,Emilia Aponte,Physician,Good doctor,Appointment,60,8.56,78
+MD,Emily Masterson,Physician,Services,Testing and Treatment,45,9.06,82
+DO,Eri Gibb,Physician,Good doctor,Blood work and vaccine,23,8.52,61
+MD,Eric Hutto,Physician,Good doctor,Blood work and vaccine,90,8.15,30
+PA,Eric Wessel,APP,Services,Testing and Treatment,60,8.37,78
+NP,Erica Hyink,APP,Services,Blood work and vaccine,26,7.7,23
+NP,Eriko Suzuki,APP,Good doctor,Blood work and vaccine,37,8.52,78
+FNP-C,Erin Limbach,Unknown,Engagement with Patient's,Blood work and vaccine,25,8.43,60
+MD,Eva Imperial,Physician,Engagement with Patient's,No Topic,1,8.0,100
+MD,Evelyn Hemmingsen,Physician,Good doctor,Testing and Treatment,81,8.68,72
+DO,Gabriel Alarcon,Physician,Good doctor,Blood work and vaccine,90,8.79,91
+PA,Gavin Cochran,APP,Good doctor,Blood work and vaccine,38,8.42,82
+NP,Gemma Lim-GO,APP,Good doctor,Blood work and vaccine,33,7.95,55
+DO,Gene Kubacki,Physician,Good doctor,Appointment,36,8.1,58
+NP,Genni Lehnert-Beers,APP,Good doctor,Blood work and vaccine,87,8.81,82
+MD,Gina Glass,Physician,Good doctor,Lab result and services,62,8.79,85
+DO,Gloria Gadmack,Physician,Good doctor,Unskilled,8,8.47,50
+DO,Greta Snow,Physician,Good doctor,Blood work and vaccine,1,8.75,100
+DO,Gwendolyn Bowers,Physician,Engagement with Patient's,Blood work and vaccine,8,7.75,50
+MD,Haihong Mao,Physician,Concerns addressed,Blood work and vaccine,76,8.25,76
+NP,Heather Calkins,APP,Services,Blood work and vaccine,98,8.46,64
+MD,Heather Gutwein,Physician,Concerns addressed,Testing and Treatment,43,8.75,67
+PA,Heather Tamburrino,APP,Engagement with Patient's,Appointment,98,8.78,87
+MD,Heather Thomas,Physician,Good doctor,Blood work and vaccine,81,8.63,80
+MD,Heidi Handler,Physician,Good doctor,Testing and Treatment,61,8.34,59
+PA,Hilary Eickhoff,APP,Services,No Topic,27,9.56,93
+MD,Hilma Green-Riley,Physician,Good doctor,Testing and Treatment,62,8.76,89
+NP,Jacqueline Bawden,APP,Good doctor,Testing and Treatment,101,8.81,93
+DO,Jacqueline Slakoper Delessio,Physician,Good doctor,Testing and Treatment,64,8.88,91
+FNP,Jamais Nottger,APP,Good doctor,Appointment,30,8.43,73
+MD,James Bancroft,Physician,Concerns addressed,Blood work and vaccine,55,8.75,87
+NP,James Browning,APP,Services,Lab result and services,69,7.7,43
+MD,James Demmel,Physician,Services,Blood work and vaccine,60,8.48,80
+MD,James Moeller,Physician,Professionalism,Unskilled,37,8.66,84
+MD,James Roby,Physician,Services,No Topic,28,9.0,93
+NP,Jamie Weidner,APP,Services,No Topic,20,8.29,80
+MD,Jan Hester,Physician,Services,Appointment,65,8.57,75
+NP,Jane Snyder,APP,Good doctor,Blood work and vaccine,32,8.56,69
+MD,Janine Beckles,Physician,Good doctor,Blood work and vaccine,25,9.01,100
+RN,Jasmine Storey,Unknown,Professionalism,No Topic,1,10.0,100
+MD,Jason Mehrtens,Physician,Good doctor,Unskilled,135,8.8,93
+DO,Jean Miller,Physician,Good doctor,Testing and Treatment,71,8.79,75
+NP,Jeanine Kuna,APP,Good doctor,Testing and Treatment,58,8.76,86
+NP,Jeffrey Glover,APP,Good doctor,Testing and Treatment,25,8.06,44
+MD,Jeffrey Peterson,Physician,Good doctor,Blood work and vaccine,168,8.52,57
+FNP-BC,Jennifer Carapia,Unknown,Good doctor,Lab result and services,33,8.91,82
+NP,Jennifer Haselman,APP,Good doctor,Blood work and vaccine,46,8.69,87
+NP,Jennifer Messervy,APP,Services,Blood work and vaccine,70,8.29,50
+MD,Jennifer Poptic,Physician,Concerns addressed,Testing and Treatment,87,9.07,90
+NP,Jennifer Rice,APP,Good doctor,Blood work and vaccine,47,8.57,66
+MD,Jennifer Smart,Physician,Good doctor,Lab result and services,39,8.2,64
+MD,Jennifer Watson,Physician,Good doctor,Unskilled,62,9.1,82
+MD,Jenny Chien,Physician,Good doctor,Blood work and vaccine,93,8.9,89
+NP,Jessica Hays,APP,Good doctor,Blood work and vaccine,36,8.53,81
+NP,Jessica Mendez,APP,Services,Lab result and services,33,8.5,55
+MD,Jessica Smith,Physician,Services,Blood work and vaccine,113,9.0,84
+MD,Jessy Thomas,Physician,Good doctor,Lab result and services,40,8.63,63
+NP,Jill Evans,APP,Professionalism,No Topic,3,8.58,67
+NP,Jill Lascoe,APP,Good doctor,Unskilled,18,8.73,72
+NP,Jill McAtee,APP,Engagement with Patient's,Blood work and vaccine,68,8.41,72
+MD,Jillian Scott,Physician,Good doctor,Testing and Treatment,55,8.73,78
+PA-C,Jim Worman,Unknown,Good doctor,Blood work and vaccine,21,8.95,100
+DO,Joan Song-Nichols,Physician,Good doctor,Blood work and vaccine,66,8.69,85
+PA-C,Jodi Blume,Unknown,Professionalism,No Topic,22,8.63,95
+DO,Jodi Ritter,Physician,Concerns addressed,Blood work and vaccine,48,8.49,73
+FNP,Jodie Webb,APP,Good doctor,No Topic,12,9.33,83
+MD,John Reiskytl,Physician,Good doctor,Blood work and vaccine,63,8.6,67
+NP,Jonya Lockart,APP,Engagement with Patient's,Blood work and vaccine,5,8.81,60
+DO,Joseph Lisanti,Physician,Services,Testing and Treatment,23,7.86,61
+MD,Joseph Orzechowski,Physician,Good doctor,Blood work and vaccine,72,8.66,89
+MD,Joy Wolfe,Physician,Good doctor,Lab result and services,48,8.86,98
+NP,Kaitlyn Sloan,APP,Engagement with Patient's,Blood work and vaccine,28,8.76,75
+MD,Kalyan Aluri,Physician,Services,Testing and Treatment,13,7.62,15
+PA-C,Karen Johnson,Unknown,Good doctor,Blood work and vaccine,80,8.72,89
+NP,Karen Lewis,APP,Good doctor,Appointment,28,8.78,61
+DO,Karl Treiber,Physician,Good doctor,Blood work and vaccine,143,8.79,94
+NP,Katelyn Thompson,APP,Services,No Topic,5,8.01,100
+NP,Kathleen Cotten,APP,Services,Testing and Treatment,63,8.24,60
+NP,Kathleen Hathaway,APP,Services,Blood work and vaccine,108,8.85,87
+MD,Kathleen Wagner,Physician,Good doctor,Blood work and vaccine,51,8.62,94
+FNP,Kathryn Plummer,APP,Good doctor,Blood work and vaccine,103,8.2,58
+nan,Katie Desai,nan,No Topic,No Topic,1,8.75,100
+MD,Katie O'Grady,Physician,Engagement with Patient's,Blood work and vaccine,98,8.82,80
+NP,Kelli Michael,APP,Good doctor,Blood work and vaccine,48,8.54,94
+DO,Kelli Peiffer,Physician,Good doctor,Blood work and vaccine,95,8.89,80
+MD,Kelly DeMeyere-Coursey,Physician,Good doctor,Appointment,69,9.02,84
+MD,Kelly O'Malia,Physician,Good doctor,Blood work and vaccine,49,8.86,71
+PA,Kelszie Morgan,APP,Concerns addressed,Lab result and services,25,8.77,84
+MD,Kenneth Sowinski,Physician,Services,Blood work and vaccine,74,9.09,78
+MD,Kevin Izard,Physician,Good doctor,Testing and Treatment,62,8.48,69
+NP,Kevin Strohl,APP,Good doctor,No Topic,19,9.01,79
+PA,Kim Wiese,APP,Concerns addressed,Testing and Treatment,48,8.72,88
+DO,Kimberly Jones-Mudd,Physician,Good doctor,Blood work and vaccine,45,8.49,80
+NP,Kimberly Kittleson,APP,Good doctor,No Topic,6,9.53,100
+NP,Kimberly Spencer,APP,Engagement with Patient's,Blood work and vaccine,63,8.97,98
+MD,Kindra Smith,Physician,Services,Testing and Treatment,39,8.65,49
+MD,Kip Bidwell,Physician,Engagement with Patient's,Blood work and vaccine,10,8.12,50
+NP,Kori Strubing,APP,Engagement with Patient's,Blood work and vaccine,36,8.68,83
+NP,Kory Schweitzer,APP,Good doctor,Blood work and vaccine,33,8.24,61
+DO,Krista Sexton-Cox,Physician,Good doctor,Appointment,33,8.45,85
+MD,Kristin Everett,Physician,Good doctor,Blood work and vaccine,137,8.86,87
+PA,Kristina Piperevska,APP,Good doctor,Lab result and services,42,8.19,74
+FNP,Kristy Norris,APP,Services,Blood work and vaccine,84,8.5,65
+MD,Lauren DeAlleaume,Physician,Concerns addressed,Blood work and vaccine,64,8.28,61
+NP,Lauren Dyer,APP,Services,No Topic,7,8.17,71
+NP,Laurie Meyer,APP,Engagement with Patient's,Unskilled,65,9.07,92
+DO,Lawrence Ryan,Physician,Services,Lab result and services,38,8.67,79
+PA,Layne Cryan,APP,Good doctor,Lab result and services,76,9.03,89
+NP,Leigh Ann Gratz,APP,Engagement with Patient's,Blood work and vaccine,41,9.15,85
+NP,Lindsay Lollis,APP,Good doctor,Testing and Treatment,85,8.05,40
+NP,Lindsey Lange,APP,Good doctor,Lab result and services,79,8.96,85
+NP,Lisa McCoy,APP,Engagement with Patient's,Lab result and services,15,9.26,100
+"APRN, CNP",Lisa Rolfes,Unknown,Good doctor,Unskilled,23,9.13,83
+MD,Louis Browne,Physician,Concerns addressed,Testing and Treatment,192,7.96,49
+FNP,Luz Rodriguez Lennon,APP,Good doctor,Testing and Treatment,23,8.7,83
+PA,Madeline Jewell,APP,Good doctor,Blood work and vaccine,179,8.14,56
+MD,Marci Kessen,Physician,Engagement with Patient's,Blood work and vaccine,31,8.3,81
+MD,Margaret Simon,Physician,Good doctor,Blood work and vaccine,131,8.85,82
+NP,Maria Riemann,APP,Good doctor,No Topic,17,8.99,88
+NP,Marisa Burkhart,APP,Good doctor,Blood work and vaccine,76,8.39,71
+DO,Mark Donnelly,Physician,Engagement with Patient's,Blood work and vaccine,106,8.52,82
+DO,Marlona Harting,Physician,Engagement with Patient's,No Topic,4,8.55,100
+NP,Marva Thomas,APP,Good doctor,Testing and Treatment,72,8.37,68
+NP,Mary Beth Lewis,APP,Good doctor,Blood work and vaccine,77,8.37,68
+NP,Mary Ellen Francescani,APP,Professionalism,Blood work and vaccine,20,8.37,80
+NP,Mary Francescani,APP,No Topic,No Topic,1,8.75,100
+NP,Mary Husser,APP,Good doctor,Testing and Treatment,26,8.97,85
+MD,Mary Jean Vorwald,Physician,Services,No Topic,3,8.08,-33
+MD,Matthew Szvetecz,Physician,Good doctor,Appointment,42,8.43,43
+NP,Maureen Wellman,APP,Services,Lab result and services,22,9.28,86
+MD,Meaghann Bernardy,Physician,Engagement with Patient's,Blood work and vaccine,105,8.91,81
+DO,Medina Culver,Physician,Concerns addressed,Testing and Treatment,47,8.55,62
+NP,Megan Burkey,APP,Good doctor,No Topic,4,8.15,50
+NP,Megan Connelly,APP,No Topic,Testing and Treatment,1,6.8,100
+NP,Megan Montecalvo,APP,Good doctor,Appointment,108,8.69,81
+FNP,Meilee Fields,APP,Good doctor,Blood work and vaccine,93,8.73,90
+NP,Melanie Johnson,APP,Good doctor,Blood work and vaccine,59,7.89,44
+MD,Melinda Fritz,Physician,Good doctor,Lab result and services,100,8.38,78
+MD,Melissa Banzon,Physician,Good doctor,Blood work and vaccine,113,8.82,89
+NP,Melissa Cooper,APP,Good doctor,No Topic,10,8.84,80
+NP,Melissa Disch,APP,Concerns addressed,Lab result and services,41,7.74,32
+NP,Melissa Mork,APP,Engagement with Patient's,Lab result and services,4,7.98,0
+DO,Melita Marcial-Schuster,Physician,Concerns addressed,Lab result and services,116,8.76,87
+DO,Michael Gorman,Physician,Good doctor,Testing and Treatment,50,8.71,66
+MD,Michael Helms,Physician,Good doctor,Blood work and vaccine,89,8.69,84
+MD,Michael Smolak,Physician,Services,Testing and Treatment,27,8.53,89
+MD,Michael Springer,Physician,Good doctor,Blood work and vaccine,29,9.24,93
+NP,Michael Zinn,APP,Good doctor,Blood work and vaccine,48,8.37,60
+NP,Michelle Evans,APP,Good doctor,Lab result and services,35,8.62,86
+NP,Michelle Pad,APP,Concerns addressed,Lab result and services,23,8.67,87
+PA,Mike Peck,APP,Professionalism,Blood work and vaccine,62,8.55,73
+NP,Milton Roldan,APP,Good doctor,Blood work and vaccine,25,8.63,76
+NP,Misty Buffenmeyer,APP,Engagement with Patient's,Blood work and vaccine,28,8.66,75
+MD,Molly Garau,Physician,Engagement with Patient's,Blood work and vaccine,18,8.1,89
+FNP,Moneka Patterson,APP,Good doctor,Lab result and services,12,9.02,83
+Unknown,Monica Pope,Unknown,No Topic,No Topic,1,9.0,100
+NP,Monique Moses,APP,Good doctor,Blood work and vaccine,71,8.57,87
+NP,Morgan Hunter,APP,Professionalism,No Topic,8,8.74,75
+FNP,My - Linh Nguyen,APP,Good doctor,Blood work and vaccine,41,7.56,66
+NP,Nathan Fowler,APP,Professionalism,Lab result and services,57,8.24,65
+FNP,Nicole Hoffman,APP,Good doctor,No Topic,26,9.14,81
+NP,Octavia Raquel Holloway-Freeman,APP,Good doctor,No Topic,9,7.84,33
+MD,Ola Eisa,Physician,Concerns addressed,Lab result and services,49,8.54,86
+NP,Pamela Roeder,APP,Services,Blood work and vaccine,46,8.64,72
+NP,Patricia Fettig,APP,Services,No Topic,1,8.8,100
+MD,Patricia Jordan,Physician,Concerns addressed,Unskilled,165,8.97,87
+MD,Paul Angleton,Physician,Concerns addressed,Blood work and vaccine,89,8.67,90
+MD,Paula Frantz,Physician,Good doctor,Blood work and vaccine,50,8.59,88
+NP,Paula Henry,APP,Good doctor,No Topic,7,9.34,71
+NP,Peggy Katsma,APP,Services,Testing and Treatment,64,8.49,78
+MD,Prathibha Potharlanka,Physician,Good doctor,Blood work and vaccine,44,7.76,36
+DO,Rachel Polish,Physician,Good doctor,No Topic,10,8.59,80
+FNP,Rachel Vreeland,APP,Services,Appointment,131,8.79,84
+MD,Randolph Kline,Physician,Engagement with Patient's,Testing and Treatment,73,8.63,82
+NP,Rebecca Charlet,APP,Good doctor,Lab result and services,58,8.92,74
+MD,Rebecca Rockers,Physician,Concerns addressed,Blood work and vaccine,69,8.64,88
+MD,Rita Watkins,Physician,Good doctor,Testing and Treatment,100,8.62,84
+MD,Robert Knudson,Physician,Good doctor,Appointment,58,8.71,79
+FNP,Robin Brauchla,APP,Services,Unskilled,79,8.84,81
+NP,Robin Cartwright,APP,Good doctor,Unskilled,17,8.83,88
+NP,Robin Grimm,APP,Engagement with Patient's,Blood work and vaccine,2,8.0,100
+NP,Robin Mitchell,APP,Good doctor,Blood work and vaccine,37,7.88,59
+PA,Ronda Nartker,APP,Good doctor,Blood work and vaccine,106,8.87,85
+FNP,Samantha Peckham,APP,Good doctor,Lab result and services,31,8.36,74
+NP,Sandra Kay,APP,Good doctor,Blood work and vaccine,26,8.48,81
+NP,Sandra Seegmiller,APP,Engagement with Patient's,Appointment,28,8.76,75
+NP,Sarah Davis,APP,Good doctor,Blood work and vaccine,35,8.96,86
+FNP,Sarah Keihany,APP,No Topic,No Topic,1,8.75,100
+NP,Sarah Kolacz,APP,Concerns addressed,Blood work and vaccine,64,8.51,72
+PA,Sarah Niese,APP,Good doctor,Blood work and vaccine,29,8.47,79
+MD,Scott Davidson,Physician,Concerns addressed,Testing and Treatment,28,8.93,82
+PA,Scott Zeller,APP,Engagement with Patient's,Blood work and vaccine,118,8.84,83
+MD,Sean McBrearty,Physician,Good doctor,Blood work and vaccine,145,8.93,92
+PA,Shannan Dennis,APP,Good doctor,Lab result and services,29,7.96,52
+PA,Sharin Berger,APP,Professionalism,Blood work and vaccine,4,6.94,-25
+FNP-C,Sharon Barber,Unknown,Engagement with Patient's,Testing and Treatment,54,9.05,85
+NP,Sheila Mara,APP,Concerns addressed,No Topic,1,8.4,100
+MD,Sheila Perez-Steele,Physician,Services,Blood work and vaccine,37,9.09,95
+MD,Sheri Pierce,Physician,Good doctor,Lab result and services,53,9.03,83
+DO,Shirin Morad,Physician,Engagement with Patient's,Blood work and vaccine,32,8.68,53
+MD,Sonya Black,Physician,Engagement with Patient's,Lab result and services,118,8.67,97
+NP,Sonya Suttle,APP,Concerns addressed,No Topic,3,9.3,33
+NP,Stephanie Davitto,APP,Engagement with Patient's,No Topic,4,9.38,100
+DO,Stephen Licetti,Physician,Good doctor,Testing and Treatment,37,8.16,54
+MD,Stephen Wills,Physician,Good doctor,Lab result and services,87,8.77,85
+MD,Steven Gray,Physician,Good doctor,Testing and Treatment,80,8.93,94
+NP,Susan Alexander,APP,Services,No Topic,2,9.0,100
+MD,Susan Cavins-Stewart,Physician,Engagement with Patient's,Testing and Treatment,64,8.27,70
+MD,Susan Ritter,Physician,Services,Blood work and vaccine,22,8.18,68
+NP- C,Susan Schowe,nan,Services,No Topic,4,9.44,75
+PA,Suzanne Brill,APP,Good doctor,Unskilled,9,7.96,56
+MD,Suzanne Flores-Zepeda,Physician,Engagement with Patient's,Appointment,48,8.73,96
+FNP,Suzanne Holmes,APP,Services,No Topic,34,8.84,85
+PA,Suzette Delaware,APP,Concerns addressed,No Topic,6,8.4,83
+PA-C,Sydney Harasym,Unknown,Engagement with Patient's,Testing and Treatment,62,8.91,98
+MD,Tadeja Agee,Physician,Engagement with Patient's,Blood work and vaccine,34,7.99,53
+PA,Tammera Park,APP,Good doctor,Testing and Treatment,150,8.76,78
+FNP-C,Tammy Gaska,Unknown,Services,Testing and Treatment,23,8.43,61
+NP,Teresa Martin Moses,APP,Good doctor,No Topic,1,7.5,100
+PA,Terry Villarreal-Golba,APP,Engagement with Patient's,Blood work and vaccine,36,8.74,72
+MD,Thomas Moore,Physician,Good doctor,Testing and Treatment,73,8.55,58
+MD,Tiffany Friesen,Physician,Good doctor,Blood work and vaccine,36,8.98,72
+Unknown,Tiffany Themas,Unknown,Good doctor,No Topic,3,8.2,100
+PA,Timothy Koehler,APP,Concerns addressed,Lab result and services,36,8.96,83
+MD,Tonya Cramer,Physician,Engagement with Patient's,Blood work and vaccine,52,8.41,77
+FNP,Tracy Mahaney,APP,Services,Blood work and vaccine,44,8.52,66
+MD,Troy Curtis,Physician,Good doctor,Blood work and vaccine,152,8.81,78
+NP,Tyler Niese,APP,Good doctor,No Topic,12,8.03,50
+Unknown,Undetermined Physician,Unknown,Good doctor,Testing and Treatment,7,9.09,86
+Unknown,Unknown,Unknown,Good doctor,Blood work and vaccine,67,8.43,76
+NP,Valerie Linzey,APP,Engagement with Patient's,Testing and Treatment,17,7.96,76
+NP,Wendy Perkins,APP,Good doctor,Blood work and vaccine,45,8.75,93
+PA,Wendy Veeder,APP,Engagement with Patient's,Blood work and vaccine,54,8.77,83
+MD,William Farrell,Physician,Services,Blood work and vaccine,82,8.88,78
+MD,Yuri Lee,Physician,Engagement with Patient's,Blood work and vaccine,64,8.69,75
+MD,Zakiya Steadman,Physician,Good doctor,Testing and Treatment,49,8.89,100

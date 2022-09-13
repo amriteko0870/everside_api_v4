@@ -560,7 +560,8 @@ def totalComments(request,format=None):
                                                             clinic = F('NPSCLINIC'),
                                                             client = F('CLIENT_NAME'),
                                                             topic = F('TOPIC'),
-                                                            question_type = V('REASONNPSSCORE', output_field=CharField())
+                                                            question_type = V('REASONNPSSCORE', output_field=CharField()),
+                                                            provider = F('PROVIDER_NAME')
                                                             
                                                 )
             all_comments = all_comments.exclude(review = '  ')
@@ -621,7 +622,8 @@ def positiveComments(request,format=None):
                                                             client = F('CLIENT_NAME'),
                                                             topic = F('TOPIC'),
                                                             time = F('TIMESTAMP'),
-                                                            question_type = V('REASONNPSSCORE', output_field=CharField())
+                                                            question_type = V('REASONNPSSCORE', output_field=CharField()),
+                                                            provider = F('PROVIDER_NAME')
 
                                                 )
             positive_comments = positive_comments.exclude(review = '  ')
@@ -683,7 +685,8 @@ def negativeComments(request,format=None):
                                                             client = F('CLIENT_NAME'),
                                                             topic = F('TOPIC'),
                                                             time = F('TIMESTAMP'),
-                                                            question_type = V('REASONNPSSCORE', output_field=CharField())
+                                                            question_type = V('REASONNPSSCORE', output_field=CharField()),
+                                                            provider = F('PROVIDER_NAME')
 
                                                 )
             negative_comments = negative_comments.exclude(review = '  ')
@@ -744,7 +747,8 @@ def neutralComments(request,format=None):
                                                             client = F('CLIENT_NAME'),
                                                             topic = F('TOPIC'),
                                                             time = F('TIMESTAMP'),
-                                                            question_type = V('REASONNPSSCORE', output_field=CharField())
+                                                            question_type = V('REASONNPSSCORE', output_field=CharField()),
+                                                            provider = F('PROVIDER_NAME')
 
                                                 )
             neutral_comments = neutral_comments.exclude(review = '  ')
@@ -804,7 +808,8 @@ def extremeComments(request,format=None):
                                                             client = F('CLIENT_NAME'),
                                                             topic = F('TOPIC'),
                                                             time = F('TIMESTAMP'),
-                                                            question_type = V('REASONNPSSCORE', output_field=CharField())
+                                                            question_type = V('REASONNPSSCORE', output_field=CharField()),
+                                                            provider = F('PROVIDER_NAME')
 
                                                 )
             extreme_comments = extreme_comments.exclude(review = '  ')
@@ -865,7 +870,8 @@ def alertComments(request,format=None):
                                                             client = F('CLIENT_NAME'),
                                                             topic = F('TOPIC'),
                                                             time = F('TIMESTAMP'),
-                                                            question_type = V('REASONNPSSCORE', output_field=CharField())
+                                                            question_type = V('REASONNPSSCORE', output_field=CharField()),
+                                                            provider = F('PROVIDER_NAME')
 
                                                 )
             alert_comments = alert_comments.exclude(review = '  ')
@@ -1723,10 +1729,11 @@ def providerCommentDownload(request,format=None):
     comments = comments.exclude(review = '  ')
     comments = sorted(comments, key=itemgetter('time'),reverse=True)
     comments_df = pd.DataFrame(list(comments))
-    comments_df = comments_df[['timestamp','review','topic','reason','label']]
+    comments_df = comments_df[['timestamp','review','topic','clinic','reason','label']]
     comments_df.rename(columns={'review':'comments'}, inplace=True)
     comments_df.rename(columns={'reason':'Visit Reason'}, inplace=True)
     comments_df.rename(columns={'label':'Sentiment'}, inplace=True)
+    comments_df.rename(columns={'timestamp':'Date'}, inplace=True)
     comments_df.columns = comments_df.columns.str.upper()
     username = (request.GET.get('username'))
     a = 'uploads/engagement_download_files/'+username+'_provider_comment.csv'
@@ -1756,16 +1763,31 @@ def providerScoreCard(request,format=None):
                               .filter(TIMESTAMP__lte=endDate)\
                               .filter(PROVIDER_NAME=provider)
     name = provider
-    p_type = obj.values_list('PROVIDERTYPE',flat=True).last()
-    p_cat = obj.values_list('PROVIDER_CATEGORY',flat=True).last()
     score_list = list(obj.values_list('MEMBER_PROVIDER_SCORE',flat=True))
-    avg_score = sum(score_list)/len(score_list)
-    # print("################################## ",avg_score)
+    avg_score = round(sum(score_list)/len(score_list),2)
+    encounter = obj.values_list('ENCOUNTER_REASON').distinct().count()
+    patient_count = obj.values_list('MEMBER_ID',flat=True).distinct().count()
+    survey = obj.count()
+    nps_response = obj.annotate(
+                                review = Func(
+                                    Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
+                                    V('nan'), V(''),
+                                    function='replace'))\
+                      .values('review').exclude(review = '  ')\
+                      .count()
+    avg_nps = obj.aggregate(avg_nps = twoDecimal(Avg(F('NPS'))))
+    topic = providerTopic.objects.filter(PROVIDER_NAME=provider).values('POSITIVE_TOPIC','NEGATIVE_TOPIC')
+
     info = {
             'name' : name,
-            'type':p_type,
-            'category': p_cat,
-            'score':avg_score
+            'score':avg_score,
+            'encounter':encounter,
+            'patient_count':patient_count,
+            'survey':survey,
+            'nps_response':nps_response,
+            'avg_nps':avg_nps['avg_nps'],
+            'positive_topic':topic[0]['POSITIVE_TOPIC'],
+            'negative_topic':topic[0]['NEGATIVE_TOPIC'],
             }
 
     # print(info)
@@ -1790,13 +1812,13 @@ def providerScoreCard(request,format=None):
             nps = round(((promoter - detractor)/(promoter+passive+detractor))*100,2)
 
         nps_card = {
-                    'promoter_count':promoter,
-                    'passive_count':passive,
-                    'detractor_count':detractor,
-                    'promoter':round((promoter/(promoter+passive+detractor))*100,2),
+                    'total_promoters':promoter,
+                    'total_passive':passive,
+                    'total_detractors':detractor,
+                    'promoters':round((promoter/(promoter+passive+detractor))*100,2),
                     'passive':round((passive/(promoter+passive+detractor))*100,2),
-                    'detractor':round((detractor/(promoter+passive+detractor))*100,2),
-                    'nps':nps
+                    'detractors':round((detractor/(promoter+passive+detractor))*100,2),
+                    'nps_score':nps
         }
         nps_pie = [
                     {
@@ -1907,30 +1929,68 @@ def providerScoreCard(request,format=None):
             "neutral":neutral,
             "total_neutral": len(neutral_count), 
         }
-    
-    top_positive = list(obj.filter(sentiment_label = 'Positive')\
-                      .values('POLARITY_SCORE','TOPIC')\
-                      .order_by('-POLARITY_SCORE')\
-                      .values_list('TOPIC',flat=True)\
-                      .distinct())[:5]
+    nss_pie = [{
+                        "label":"Positive",
+                        "percentage":positive,
+                        "color":"#00AC69",
+                    },
+                    {
+                        "label":"Negative",
+                        "percentage":negative,
+                        "color":"#EE6123",
+                    },
+                    {
+                        "label":"Extreme",
+                        "percentage":extreme,
+                        "color":"#DB2B39",
+                    },
+                    {
+                        "label":"Neutral",
+                        "percentage":neutral,
+                        "color":"#939799",
+                    }]
 
-    top_negative = list(obj.filter(sentiment_label__in = ['Negative','Extreme'])\
-                      .values('POLARITY_SCORE','TOPIC')\
-                      .order_by('POLARITY_SCORE')\
-                      .values_list('TOPIC',flat=True)\
-                      .distinct())[:5]
+    provider_topics = obj.annotate(provider_name = F('PROVIDER_NAME'))\
+                                            .values('provider_name')\
+                                            .annotate(
+                                                    count = Count(F('REVIEW_ID')),
+                                                    promoter = Sum(Case(
+                                                        When(nps_label='Promoter',then=1),
+                                                        default=0,
+                                                        output_field=IntegerField()
+                                                        )),
+                                                    detractor = Sum(Case(
+                                                        When(nps_label='Detractor',then=1),
+                                                        default=0,
+                                                        output_field=IntegerField()
+                                                        )),
+                                                    provider_type = F('PROVIDERTYPE'),
+                                                    provider_category = F('PROVIDER_CATEGORY'),
+                                                    nps_abs=Cast(Round((Cast((F('promoter')-F('detractor')),FloatField())/F('count'))*100),IntegerField()),
+                                                    average_nps = Case(
+                                                            When(
+                                                                nps_abs__lt = 0,
+                                                                then = 0    
+                                                                ),
+                                                                default=F('nps_abs'),
+                                                                output_field=FloatField()
+                                                              ),
+                                                    score = twoDecimal(Avg('MEMBER_PROVIDER_SCORE'))
+                                                )
+    provider_topic2 = providerTopic.objects.filter(PROVIDER_NAME = provider ).values('POSITIVE_TOPIC','NEGATIVE_TOPIC')
+    provider_topic = {**list(provider_topics)[0],**list(provider_topic2)[0]}
     res = {
            'Message':'TRUE',
            'provider_info':info,
-           'provider_star':l,
-           'provider_nps':nps_card,
-           'provider_nps_pie':nps_pie,
-           'provider_total_card':total_card,
-           'provider_statistics':statistic,
-           'provider_comments':comments,
+           'nps':nps_card,
+           'nps_pie':nps_pie,
            'nss':nss,
-           'top_positive':top_positive,
-           'top_negative':top_negative,
+           'nss_pie':nss_pie,
+           'provider_comments':comments,
+        #    'provider_total_card':total_card,
+        #    'provider_star':l,
+        #    'provider_statistics':statistic,
+        #    'topic':provider_topic,
     }
 
     return Response(res)

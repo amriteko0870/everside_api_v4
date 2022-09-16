@@ -510,7 +510,7 @@ def totalCards(request,format=None):
 
 @api_view(['POST'])
 def totalComments(request,format=None):
-    try:
+    # try:
         if request.method == 'POST':     
             start_year = request.GET.get('start_year')
             start_month = request.GET.get('start_month')
@@ -550,7 +550,7 @@ def totalComments(request,format=None):
 
             all_comments = all_comments.values('id')\
             .annotate(
-                                                            review = Func(
+                                                            review1 = Func(
                                                                 Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
                                                                 V('nan'), V(''),
                                                                 function='replace'),
@@ -563,12 +563,15 @@ def totalComments(request,format=None):
                                                             question_type = V('REASONNPSSCORE', output_field=CharField()),
                                                             provider = F('PROVIDER_NAME')
                                                             
-                                                )
+                                                ).annotate(review = Func(
+                                                                F('review1'),
+                                                                V('Unknown'), V(''),
+                                                                function='replace'))
             all_comments = all_comments.exclude(review = '  ')
             all_comments = sorted(all_comments, key=itemgetter('time'),reverse=True)
         return Response({'Message':'True','data':all_comments})
-    except:
-        return Response({'Message':'FALSE'}) 
+    # except:
+    #     return Response({'Message':'FALSE'}) 
 
 @api_view(['POST'])
 def positiveComments(request,format=None):
@@ -612,7 +615,7 @@ def positiveComments(request,format=None):
 
             positive_comments = positive_comments.filter(sentiment_label = 'Positive').values('id')\
                                                 .annotate(
-                                                            review = Func(
+                                                            review1 = Func(
                                                                 Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
                                                                 V('nan'), V(''),
                                                                 function='replace'),
@@ -625,7 +628,11 @@ def positiveComments(request,format=None):
                                                             question_type = V('REASONNPSSCORE', output_field=CharField()),
                                                             provider = F('PROVIDER_NAME')
 
-                                                )
+                                                ).annotate(review = Func(
+                                                                F('review1'),
+                                                                V('Unknown'), V(''),
+                                                                function='replace'))
+
             positive_comments = positive_comments.exclude(review = '  ')
             positive_comments= sorted(positive_comments ,key=itemgetter('time'),reverse=True)    
         return Response({'Message':'True','count':len(positive_comments),'data':positive_comments})
@@ -675,7 +682,7 @@ def negativeComments(request,format=None):
 
             negative_comments = negative_comments.filter(sentiment_label = 'Negative').values('id')\
                                                 .annotate(
-                                                            review = Func(
+                                                            review1 = Func(
                                                                 Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
                                                                 V('nan'), V(''),
                                                                 function='replace'),
@@ -688,7 +695,11 @@ def negativeComments(request,format=None):
                                                             question_type = V('REASONNPSSCORE', output_field=CharField()),
                                                             provider = F('PROVIDER_NAME')
 
-                                                )
+                                                ).annotate(review = Func(
+                                                                F('review1'),
+                                                                V('Unknown'), V(''),
+                                                                function='replace'))
+
             negative_comments = negative_comments.exclude(review = '  ')
             negative_comments= sorted(negative_comments ,key=itemgetter('time'),reverse=True)    
         return Response({'Message':'True','count':len(negative_comments),'data':negative_comments})
@@ -737,7 +748,7 @@ def neutralComments(request,format=None):
 
             neutral_comments = neutral_comments.filter(sentiment_label = 'Neutral').values('id')\
                                                 .annotate(
-                                                            review = Func(
+                                                            review1 = Func(
                                                                 Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
                                                                 V('nan'), V(''),
                                                                 function='replace'),
@@ -750,7 +761,11 @@ def neutralComments(request,format=None):
                                                             question_type = V('REASONNPSSCORE', output_field=CharField()),
                                                             provider = F('PROVIDER_NAME')
 
-                                                )
+                                                ).annotate(review = Func(
+                                                                F('review1'),
+                                                                V('Unknown'), V(''),
+                                                                function='replace'))
+
             neutral_comments = neutral_comments.exclude(review = '  ')
             neutral_comments= sorted(neutral_comments ,key=itemgetter('time'),reverse=True)    
         return Response({'Message':'True','count':len(neutral_comments),'data':neutral_comments})
@@ -798,7 +813,7 @@ def extremeComments(request,format=None):
 
             extreme_comments = extreme_comments.filter(sentiment_label = 'Extreme').values('id')\
                                                 .annotate(
-                                                            review = Func(
+                                                            review1 = Func(
                                                                 Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
                                                                 V('nan'), V(''),
                                                                 function='replace'),
@@ -811,7 +826,11 @@ def extremeComments(request,format=None):
                                                             question_type = V('REASONNPSSCORE', output_field=CharField()),
                                                             provider = F('PROVIDER_NAME')
 
-                                                )
+                                                ).annotate(review = Func(
+                                                                F('review1'),
+                                                                V('Unknown'), V(''),
+                                                                function='replace'))
+
             extreme_comments = extreme_comments.exclude(review = '  ')
             extreme_comments= sorted(extreme_comments ,key=itemgetter('time'),reverse=True)    
         return Response({'Message':'True','count':len(extreme_comments),'data':extreme_comments})
@@ -860,7 +879,7 @@ def alertComments(request,format=None):
 
             alert_comments = alert_comments.filter(sentiment_label = 'Extreme').values('id')\
                                                 .annotate(
-                                                            review = Func(
+                                                            review1 = Func(
                                                                 Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
                                                                 V('nan'), V(''),
                                                                 function='replace'),
@@ -873,7 +892,10 @@ def alertComments(request,format=None):
                                                             question_type = V('REASONNPSSCORE', output_field=CharField()),
                                                             provider = F('PROVIDER_NAME')
 
-                                                )
+                                                ).annotate(review = Func(
+                                                                F('review1'),
+                                                                V('Unknown'), V(''),
+                                                                function='replace'))
             alert_comments = alert_comments.exclude(review = '  ')
             alert_comments= sorted(alert_comments ,key=itemgetter('time'),reverse=True)    
         return Response({'Message':'True','data':alert_comments})
@@ -1710,7 +1732,7 @@ def providerCommentDownload(request,format=None):
         end_date = str(int(end_month)+1)+'-'+str(end_year)
     else:
         end_date = str('1-')+str(int(end_year)+1)
-    endDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub
+    sendDate = (time.mktime(datetime.datetime.strptime(end_date,"%m-%Y").timetuple())) - timestamp_sub
     obj = everside_nps.objects.filter(TIMESTAMP__gte=startDate)\
                               .filter(TIMESTAMP__lte=endDate)\
                               .filter(PROVIDER_NAME=provider)
@@ -1769,17 +1791,21 @@ def providerScoreCard(request,format=None):
     patient_count = obj.values_list('MEMBER_ID',flat=True).distinct().count()
     survey = obj.count()
     nps_response = obj.annotate(
-                                review = Func(
+                                review1 = Func(
                                     Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
                                     V('nan'), V(''),
                                     function='replace'))\
+                                .annotate(review = Func(
+                                                                F('review1'),
+                                                                V('Unknown'), V(''),
+                                                                function='replace'))\
                       .values('review').exclude(review = '  ')\
                       .count()
     avg_nps = obj.aggregate(avg_nps = twoDecimal(Avg(F('NPS'))))
     topic = providerTopic.objects.filter(PROVIDER_NAME=provider).values('POSITIVE_TOPIC','NEGATIVE_TOPIC')
 
     info = {
-            'name' : name,
+            'name': name,
             'score':avg_score,
             'encounter':encounter,
             'patient_count':patient_count,
@@ -1837,11 +1863,12 @@ def providerScoreCard(request,format=None):
                         'percentage':round((detractor/(promoter+passive+detractor))*100,2)
                     }
                 ]
-    
+        
     except:
         months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov','Dec']
         date = str(months[int(start_month)-1])+'-'+start_year+' to '+str(months[int(end_month)-1])+'-'+end_year
         return Response({'Message':'ERROR','Comment':'Selected Provider not present in this date range ( '+date+' )'})
+    info['avg_nps'] = round(nps/10,2)
     member_count = obj.count()
     comment_count = obj.annotate(review = Func(
                                             Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
@@ -1987,10 +2014,11 @@ def providerScoreCard(request,format=None):
            'nss':nss,
            'nss_pie':nss_pie,
            'provider_comments':comments,
+           'topic':provider_topic,  
         #    'provider_total_card':total_card,
         #    'provider_star':l,
         #    'provider_statistics':statistic,
-        #    'topic':provider_topic,
+        
     }
 
     return Response(res)

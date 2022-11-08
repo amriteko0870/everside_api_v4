@@ -3,7 +3,7 @@ from unicodedata import name
 from django.urls import include, path
 
 from . import views
-from apiApp.data_upload import db_upload,provider_cat_set
+from apiApp.data_upload import db_upload
 
 
 from django.conf import settings

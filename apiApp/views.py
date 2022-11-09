@@ -56,7 +56,7 @@ class Round(Func):
     function = 'ROUND'
     template='%(function)s(%(expressions)s, 0)'
 #--------------------------- Filters---------------------------------------------------
-@api_view(['POST'])
+@api_view(['GET','POST'])
 def filterRegion(request,format=None):
     try:
         if request.method == 'POST':
@@ -81,7 +81,7 @@ def filterRegion(request,format=None):
     except:
         return Response({'Message':'FALSE'})
 
-@api_view(['POST'])
+@api_view(['GET','POST'])
 def filterClinic(request,format=None):
     try:
         if request.method == 'POST':
@@ -111,7 +111,7 @@ def filterClinic(request,format=None):
         return Response({'Message':'FALSE'})  
 
 
-@api_view(['POST'])
+@api_view(['GET','POST'])
 def filterClient(request,format=None):
     try:
         if request.method == 'POST':

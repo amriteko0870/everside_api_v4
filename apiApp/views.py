@@ -473,9 +473,31 @@ def totalCards(request,format=None):
             clinics = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate).values_list('NPSCLINIC').distinct()
             doctors = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate).exclude(PROVIDER_NAME__isnull=True).exclude(PROVIDER_NAME__exact='nan').values_list('PROVIDER_NAME').distinct()
             clients = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate).exclude(CLIENT_NAME__isnull=True).exclude(CLIENT_NAME__exact='nan').values_list('CLIENT_ID').distinct()
+            all_comments = everside_nps.objects.filter(TIMESTAMP__gte=startDate).filter(TIMESTAMP__lte=endDate)
+            all_comments = all_comments.values('id')\
+            .annotate(
+                                                            review1 = Func(
+                                                                Concat(F('REASONNPSSCORE'),V(' '),F('WHATDIDWELLWITHAPP'),V(' '),F('WHATDIDNOTWELLWITHAPP')),
+                                                                V('nan'), V(''),
+                                                                function='replace'),
+                                                            label = F('sentiment_label'),
+                                                            timestamp = F('SURVEY_MONTH'), 
+                                                            time = F('TIMESTAMP'),
+                                                            clinic = F('NPSCLINIC'),
+                                                            client = F('CLIENT_NAME'),
+                                                            topic = F('TOPIC'),
+                                                            question_type = V('REASONNPSSCORE', output_field=CharField()),
+                                                            provider = F('PROVIDER_NAME')
+                                                            
+                                                ).annotate(review = Func(
+                                                                F('review1'),
+                                                                V('Unknown'), V(''),
+                                                                function='replace'))
+            all_comments = all_comments.exclude(review = '  ')
             state = region
             if '' not in region:
                 survey_comments = survey_comments.filter(REGION__in = state)
+                all_comments = all_comments.filter(REGION__in = state)
                 alert_comments = alert_comments.filter(REGION__in = state)
                 clinics = clinics.filter(REGION__in = state)
                 doctors = doctors.filter(REGION__in = state)
@@ -483,6 +505,7 @@ def totalCards(request,format=None):
 
             if '' not in clinic:
                 survey_comments = survey_comments.filter(NPSCLINIC__in = clinic)
+                all_comments = all_comments.filter(NPSCLINIC__in = clinic)
                 alert_comments = alert_comments.filter(NPSCLINIC__in = clinic)
                 clinics = clinics.filter(NPSCLINIC__in = clinic)
                 doctors = doctors.filter(NPSCLINIC__in = clinic)
@@ -497,7 +520,7 @@ def totalCards(request,format=None):
 
             card_data = {
                             'survey':len(survey_comments),
-                            'comments': len(survey_comments),
+                            'comments': len(all_comments),
                             'alerts': len(alert_comments),
                             'clinic': len(clinics),
                             'doctors':len(doctors),

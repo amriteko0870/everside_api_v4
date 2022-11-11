@@ -513,6 +513,7 @@ def totalCards(request,format=None):
 
             if '' not in client:
                 survey_comments = survey_comments.filter(CLIENT_NAME__in = client)
+                all_comments = all_comments.filter(CLIENT_NAME__in = client)
                 alert_comments = alert_comments.filter(CLIENT_NAME__in = client)
                 clinics = clinics.filter(CLIENT_NAME__in = client)
                 doctors = doctors.filter(CLIENT_NAME__in = client)

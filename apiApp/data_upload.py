@@ -10,7 +10,7 @@ from django.db.models.functions import Concat,Cast,Substr
 from django.db.models import Min
 
 def db_upload(request):
-    df = pd.read_csv('07_final_oct_2022.csv')
+    df = pd.read_csv('08_final_nov_2022.csv')
     df.fillna('Unknown', inplace=True)
     region = pd.read_csv("regionState.csv")
     for i in range(df.shape[0]):
@@ -18,6 +18,7 @@ def db_upload(request):
         MEMBER_ID = list(df['MEMBER_ID'])[i]
         NPSCLINIC = list(df['NPSCLINIC__C'])[i]
         SURVEYDATE = list(df['SURVEYDATE__C'])[i]
+        print('####################',SURVEYDATE)
         SURVEYNUMBER = list(df['SURVEYNUMBER__C'])[i]
         NPS = list(df['NPS'])[i]
         REASONNPSSCORE = list(df['REASONNPSSCORE__C'])[i]
@@ -46,7 +47,7 @@ def db_upload(request):
         TOPIC = list(df['topics'])[i]
         ENCOUNTER_REASON = list(df['ENCOUNTER_REASON'])[i]
         MEMBER_PROVIDER_SCORE = list(df['MembertoProvider_Score'])[i]
-        TIMESTAMP = time.mktime(datetime.datetime.strptime(list(df['SURVEYDATE__C'])[i],"%d-%m-%Y").timetuple())
+        TIMESTAMP = time.mktime(datetime.datetime.strptime(list(df['SURVEYDATE__C'])[i],"%Y-%m-%d").timetuple())
         SURVEY_MONTH = datetime.datetime.fromtimestamp(TIMESTAMP).strftime('%b-%y')
         SURVEY_YEAR = datetime.datetime.fromtimestamp(TIMESTAMP).strftime('%Y')
         REGION = str(region.loc[(region['State']==str(CLINIC_STATE))].tail(1)['Region'].to_list()[-1]).strip()

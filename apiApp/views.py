@@ -2084,7 +2084,7 @@ def providerEmail(request,format=None):
     service = gmail_authenticate()
     
     message = MIMEMultipart('alternative')
-    message['to'] = 'vivek.k@ekoinfomatics.com'
+    message['to'] = 'nps@ekoinfomatics.com'
     message['from'] = 'nps@ekoinfomatics.com'
     message['subject'] = 'Provider Scrore card for '+provider
 
